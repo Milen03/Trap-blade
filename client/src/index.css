@@ -1,1 +1,53 @@
+@import "@fontsource/unifrakturmaguntia";
+@import "@fontsource/oswald/400.css";
+@import "@fontsource/oswald/500.css";
+@import "@fontsource/oswald/600.css";
+@import "@fontsource/oswald/700.css";
 @import "tailwindcss";
+
+@theme {
+  --font-brand: "UnifrakturMaguntia", serif;
+  --font-body: "Oswald", sans-serif;
+
+  --color-ink: #0a0a0a;
+  --color-coal: #101010;
+  --color-line: #242424;
+  --color-ice: #5cbefd;
+
+  --animate-marquee: marquee 30s linear infinite;
+  --animate-marquee-slow: marquee 45s linear infinite;
+
+  @keyframes marquee {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply overflow-x-clip bg-ink font-body text-white antialiased;
+  }
+
+  ::selection {
+    @apply bg-ice text-ink;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .animate-marquee,
+  .animate-marquee-slow {
+    animation: none;
+  }
+}
