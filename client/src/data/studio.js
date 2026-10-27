@@ -7,53 +7,61 @@ export const STUDIO = {
   address: 'ул. Ниш 1Б',
   city: 'Велико Търново',
   mapUrl: 'https://www.google.com/maps/search/?api=1&query=%D1%83%D0%BB.+%D0%9D%D0%B8%D1%88+1%D0%91%2C+%D0%92%D0%B5%D0%BB%D0%B8%D0%BA%D0%BE+%D0%A2%D1%8A%D1%80%D0%BD%D0%BE%D0%B2%D0%BE',
+  hours: [
+    { days: 'Пон – Пет', time: '[Часове]' },
+    { days: 'Събота', time: '[Часове]' },
+    { days: 'Неделя', time: 'почивен' },
+  ],
 }
 
 export const NAV_LINKS = [
-  { label: 'Начало', href: '#home' },
   { label: 'Услуги', href: '#services' },
-  { label: 'Кодекс', href: '#code' },
-  { label: 'Контакти', href: '#contact' },
+  { label: 'Екипът', href: '#team' },
+  { label: 'Контакт', href: '#contact' },
 ]
 
+// Price and duration are placeholders until the studio confirms them.
 export const SERVICES = [
   {
     id: 'buzz-cut',
     name: 'Buzz Cut',
-    tag: '01',
-    text: 'Машинка докрай. Чисто, рязко и без излишни приказки.',
+    text: 'Машинка на една дължина. Чисто, остро, без излишни приказки.',
+    price: '[Цена]',
+    duration: '[Мин.]',
   },
   {
     id: 'fade',
     name: 'Fade',
-    tag: '02',
-    text: 'Скин, лоу, мид или хай — преливане без нито една видима линия.',
+    text: 'Плавен преход от кожа до коса. Ниско, средно или високо — ти казваш.',
+    price: '[Цена]',
+    duration: '[Мин.]',
   },
   {
     id: 'crop',
     name: 'Crop',
-    tag: '03',
-    text: 'Текстура отгоре, чисти страни. Улична класика, която не остарява.',
+    text: 'Текстуриран връх с къси страни. Модерна класика за всеки ден.',
+    price: '[Цена]',
+    duration: '[Мин.]',
   },
   {
     id: 'design',
     name: 'Design',
-    tag: '04',
-    text: 'Линии и шарки, изрязани с бръснач. Подписът ти — на главата ти.',
+    text: 'Линии и шарки с бръснач. Подпис, който се вижда отдалеч.',
+    price: '[Цена]',
+    duration: '[Мин.]',
   },
 ]
 
-export const CODE_RULES = [
-  {
-    title: 'Точност',
-    text: 'Всяка линия се чертае с бръснач. Нищо не се оставя на случайността.',
-  },
-  {
-    title: 'Респект',
-    text: 'Влизаш като клиент, излизаш като част от семейството.',
-  },
-  {
-    title: 'Стил',
-    text: 'Не следваме тренда. Ние го режем.',
-  },
+export const MARQUEE_WORDS = ['Crop', 'Design', 'Beard', 'Buzz Cut', 'Fade']
+
+export const TEAM = [
+  { id: 'TB-001', role: 'Главен бръснар', name: '[Име Фамилия]', bio: 'Основател на студиото. [Кратко описание]', lead: true },
+  { id: 'TB-002', role: 'Бръснар', name: '[Име Фамилия]', bio: '[Кратко описание]' },
+  { id: 'TB-003', role: 'Бръснар', name: '[Име Фамилия]', bio: '[Кратко описание]' },
+]
+
+export const BOOKING_STEPS = [
+  { title: 'Избери бръснар', text: 'Главният или някой от екипа' },
+  { title: 'Ден и час', text: 'Свободните часове се виждат веднага' },
+  { title: 'Имена и телефон', text: 'Потвърждаваш и си готов' },
 ]
