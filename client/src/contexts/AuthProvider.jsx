@@ -44,7 +44,7 @@ function AuthProvider({ children }) {
     return {
       user,
       isLoading,
-      login: (email, password, remember) => saveUser(authService.login(email, password, remember)),
+      login: (email, password) => saveUser(authService.login(email, password)),
       register: (data) => saveUser(authService.register(data)),
       logout: async () => {
         try {

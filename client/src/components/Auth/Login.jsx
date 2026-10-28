@@ -10,14 +10,14 @@ function Login() {
   const navigate = useNavigate()
 
   // "Контролирана" форма: стойностите на полетата живеят в state.
-  const [values, setValues] = useState({ email: '', password: '', remember: false })
+  const [values, setValues] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Един общ handler за всички полета — разпознава полето по атрибута name.
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
-    setValues((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }))
+    const { name, value } = e.target
+    setValues((current) => ({ ...current, [name]: value }))
   }
 
   const handleSubmit = async (e) => {
@@ -27,7 +27,8 @@ function Login() {
 
     try {
       // Сървърът проверява имейла и паролата и при успех слага бисквитката с токена.
-      await login(values.email, values.password, values.remember)
+      // Оставаш логнат, докато не натиснеш "Изход".
+      await login(values.email, values.password)
       navigate('/')
     } catch (err) {
       setError(err.message)
@@ -72,17 +73,7 @@ function Login() {
           required
         />
 
-        <div className="flex items-center justify-between gap-4">
-          <label className="flex cursor-pointer items-center gap-3 text-white/80">
-            <input
-              type="checkbox"
-              name="remember"
-              checked={values.remember}
-              onChange={handleChange}
-              className="h-5 w-5 accent-ice"
-            />
-            Запомни ме
-          </label>
+        <div className="flex justify-end">
           <a href="#" className="text-white/70 underline underline-offset-4 hover:text-ice">
             Забравена парола?
           </a>
