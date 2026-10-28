@@ -1,9 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const { PHONE_REGEX } = require('../utils/validators');
-// Колко "тежко" е хеширането с bcrypt (2^10 повторения). Повече = по-трудно за разбиване,
-// но и по-бавен вход. 10 е препоръчителният минимум. Старите хешове с 5 продължават да работят.
-const saltRounds = Number(process.env.SALTROUNDS) || 10;
+const saltRounds = Number(process.env.SALTROUNDS) || 5;
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -36,20 +34,13 @@ const userSchema = new mongoose.Schema({
             message: 'Невалиден телефонен номер',
         },
     },
-    // Версия на сесиите. Всеки токен я носи; при "Изход" се увеличава с 1
-    // и всички по-стари токени спират да важат (виж utils/auth.js).
-    tokenVersion: {
-        type: Number,
-        default: 0,
-    },
 }, {
     timestamps: { createdAt: 'created_at' },
     // Когато пращаме потребителя като JSON към клиента,
-    // махаме паролата (хеша), tokenVersion и __v — клиентът няма нужда от тях.
+    // махаме паролата (хеша) и __v, за да не излизат никога навън.
     toJSON: {
         transform: (doc, ret) => {
             delete ret.password;
-            delete ret.tokenVersion;
             delete ret.__v;
             return ret;
         },
