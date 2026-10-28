@@ -19,7 +19,7 @@ function Track({ items, className, itemClassName, separatorClassName }) {
 }
 
 function Marquee() {
-  const tape = Array.from({ length: 6 }, (_, i) => (i % 2 ? 'Запази стол' : 'TrapBlade Studio'))
+  const tape = Array.from({ length: 6 }, (_, i) => (i % 2 ? 'Запази час' : 'TrapBlade Studio'))
   const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS]
 
   return (

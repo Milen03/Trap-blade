@@ -11,7 +11,7 @@ function Booking() {
               <br />
               си стола
             </h2>
-            <p className="mt-4 text-white/60">Без регистрация. Само имена и телефон — и часът е твой.</p>
+            <p className="mt-4 text-white/60">Бързо и лесно — няколко клика и часът е твой.</p>
             {/* Until online booking exists, the call-to-action rings the studio. */}
             <a
               href={STUDIO.phoneHref}
