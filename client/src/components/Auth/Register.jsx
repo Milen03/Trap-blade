@@ -5,7 +5,6 @@ import { MIN_PASSWORD_LENGTH, validateProfile } from '../../utils/validation.js'
 import AuthLayout from './AuthLayout.jsx'
 import AuthField from './AuthField.jsx'
 import FormError from './FormError.jsx'
-import SocialLogin from './SocialLogin.jsx'
 
 const INITIAL_VALUES = {
   firstName: '',
@@ -173,8 +172,6 @@ function Register() {
           Register
         </button>
       </form>
-
-      <SocialLogin />
     </AuthLayout>
   )
 }

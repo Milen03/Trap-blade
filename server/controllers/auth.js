@@ -72,97 +72,10 @@ async function login(req, res, next) {
         const match = user ? await user.matchPassword(password) : false;
 
         if (!match) {
-            // Профил без парола -> създаден е с Google/Apple.
-            const message = user && !user.password
-                ? 'Този профил е създаден с Google или Apple. Влез с бутона по-долу.'
-                : 'Грешен имейл или парола';
-            return res.status(401).send({ message });
+            return res.status(401).send({ message: 'Грешен имейл или парола' });
         }
 
         setAuthCookie(res, user, remember);
-        res.status(200).send(user);
-    } catch (err) {
-        next(err);
-    }
-}
-
-// Намира или създава потребител след успешен вход с Google/Apple.
-//   providerField: 'googleId' или 'appleId'
-//   providerId:    уникалното ID на потребителя при Google/Apple ("sub" в токена)
-async function findOrCreateSocialUser({ providerField, providerId, email, emailVerified, firstName, lastName, providerName }) {
-    // 1) Вече е влизал по този начин -> просто го връщаме.
-    let user = await userModel.findOne({ [providerField]: providerId });
-    if (user) {
-        return user;
-    }
-
-    // 2) Има профил с имейл + парола със същия (потвърден от Google/Apple) имейл ->
-    //    свързваме Google/Apple към него, вместо да правим втори профил.
-    if (email && emailVerified) {
-        user = await userModel.findOne({ email: email.toLowerCase() });
-        if (user) {
-            user[providerField] = providerId;
-            user.firstName = user.firstName || firstName;
-            user.lastName = user.lastName || lastName;
-            return user.save();
-        }
-    }
-
-    // 3) Нов потребител. Телефон още няма -> profileComplete ще е false
-    //    и клиентът ще покаже екрана "Довърши регистрацията".
-    if (!email) {
-        throw utils.httpError(400, `${providerName} не ни предостави имейл. Опитай с друг начин на вход.`);
-    }
-    return userModel.create({
-        email,
-        firstName,
-        lastName,
-        [providerField]: providerId,
-    });
-}
-
-// POST /api/login/google — тяло: { credential } (ID token от Google Identity Services).
-async function googleLogin(req, res, next) {
-    try {
-        const payload = await utils.oauth.verifyIdToken('google', req.body.credential);
-
-        const user = await findOrCreateSocialUser({
-            providerName: 'Google',
-            providerField: 'googleId',
-            providerId: payload.sub,
-            email: payload.email,
-            emailVerified: payload.email_verified === true,
-            // Имената от Google са само предложение — потребителят може да ги поправи после.
-            firstName: payload.given_name,
-            lastName: payload.family_name,
-        });
-
-        setAuthCookie(res, user, true);
-        res.status(200).send(user);
-    } catch (err) {
-        next(err);
-    }
-}
-
-// POST /api/login/apple — тяло: { idToken, firstName?, lastName? }.
-// Apple слага в токена само имейла. Името идва отделно и САМО при първия вход,
-// затова клиентът ни го препраща. Ако липсва — потребителят ще го въведе в "Довърши регистрацията".
-async function appleLogin(req, res, next) {
-    try {
-        const payload = await utils.oauth.verifyIdToken('apple', req.body.idToken);
-
-        const user = await findOrCreateSocialUser({
-            providerName: 'Apple',
-            providerField: 'appleId',
-            providerId: payload.sub,
-            email: payload.email,
-            // Apple понякога праща email_verified като текст "true".
-            emailVerified: payload.email_verified === true || payload.email_verified === 'true',
-            firstName: cleanString(req.body.firstName) || undefined,
-            lastName: cleanString(req.body.lastName) || undefined,
-        });
-
-        setAuthCookie(res, user, true);
         res.status(200).send(user);
     } catch (err) {
         next(err);
@@ -196,7 +109,6 @@ function getProfileInfo(req, res) {
 }
 
 // PUT /api/users/profile — промяна на име, фамилия и телефон.
-// Ползва се от екрана "Довърши регистрацията" след вход с Google/Apple.
 async function editProfileInfo(req, res, next) {
     const profile = pickProfile(req.body);
 
@@ -220,8 +132,6 @@ async function editProfileInfo(req, res, next) {
 module.exports = {
     login,
     register,
-    googleLogin,
-    appleLogin,
     logout,
     getProfileInfo,
     editProfileInfo,

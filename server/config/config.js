@@ -11,7 +11,9 @@ const clientOrigins = (process.env.CLIENT_ORIGIN || '')
 const config = {
     development: {
         port: process.env.PORT || 3000,
-        dbURL: 'mongodb://localhost:27017/forum',
+        // Локалната база се казва "trapblade" (в Compass: Localhost -> trapblade).
+        // Можеш да я смениш с DB_URL в server/.env.
+        dbURL: process.env.DB_URL || 'mongodb://localhost:27017/trapblade',
         // 5173 е портът на Vite (npm run dev в client/).
         origin: ['http://localhost:5173', 'http://localhost:5555', 'http://localhost:4200', ...clientOrigins]
     },

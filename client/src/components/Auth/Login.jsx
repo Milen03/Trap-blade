@@ -4,7 +4,6 @@ import { useAuth } from '../../hooks/useAuth.js'
 import AuthLayout from './AuthLayout.jsx'
 import AuthField from './AuthField.jsx'
 import FormError from './FormError.jsx'
-import SocialLogin from './SocialLogin.jsx'
 
 function Login() {
   const { login } = useAuth()
@@ -99,8 +98,6 @@ function Login() {
           Login
         </button>
       </form>
-
-      <SocialLogin />
     </AuthLayout>
   )
 }
