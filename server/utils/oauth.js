@@ -75,11 +75,16 @@ function verifyIdToken(providerName, idToken) {
         issuer: provider.issuer,
         // Може да има няколко Client ID-та, разделени със запетая (например уеб + мобилно приложение).
         audience: clientId.split(',').map((id) => id.trim()),
+        // Допускаме до 5 минути разлика между часовника на компютъра и този на Google.
+        clockTolerance: 300,
     };
 
     return new Promise((resolve, reject) => {
         jwt.verify(idToken, getKey, options, (err, payload) => {
             if (err) {
+                // Истинската причина пишем в конзолата на сървъра, за да може да се открие
+                // (например "jwt audience invalid" = Client ID-тата в клиента и сървъра не съвпадат).
+                console.error(`[${provider.name} login] ${err.name}: ${err.message}`);
                 reject(httpError(401, `Невалиден вход с ${provider.name}. Опитай отново.`));
                 return;
             }
