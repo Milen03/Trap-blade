@@ -2,10 +2,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import logo from '../assets/trapblade-logo.webp'
 import { NAV_LINKS } from '../data/studio.js'
+import { useAuth } from '../hooks/useAuth.js'
 
 function Navbar() {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
+  const { user, isLoading, logout } = useAuth()
+
+  const handleLogout = () => {
+    close()
+    logout()
+  }
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-ink/90 backdrop-blur-md">
@@ -28,20 +35,40 @@ function Navbar() {
               </li>
             ))}
           </ul>
-          <div className="flex items-center gap-5 border-l border-line pl-8">
-            <Link
-              to="/login"
-              className="text-xs font-semibold uppercase tracking-[0.15em] text-white/80 transition-colors hover:text-ice"
-            >
-              Вход
-            </Link>
-            <Link
-              to="/register"
-              className="border border-white/80 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] transition-colors hover:border-ice hover:text-ice"
-            >
-              Регистрация
-            </Link>
-          </div>
+          {/* Докато проверяваме сесията (isLoading), не показваме нищо, за да не "мига". */}
+          {!isLoading && (
+            <div className="flex items-center gap-5 border-l border-line pl-8">
+              {user ? (
+                <>
+                  <span className="text-xs font-semibold uppercase tracking-[0.15em] text-white/80">
+                    Здравей, <span className="text-ice">{user.firstName}</span>
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="border border-white/80 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] transition-colors hover:border-ice hover:text-ice"
+                  >
+                    Изход
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="text-xs font-semibold uppercase tracking-[0.15em] text-white/80 transition-colors hover:text-ice"
+                  >
+                    Вход
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="border border-white/80 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.15em] transition-colors hover:border-ice hover:text-ice"
+                  >
+                    Регистрация
+                  </Link>
+                </>
+              )}
+            </div>
+          )}
           <a
             href="#booking"
             className="bg-ice px-5 py-3 text-xs font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-white"
@@ -76,22 +103,38 @@ function Navbar() {
               </a>
             </li>
           ))}
-          <li className="grid grid-cols-2 gap-3 pt-6">
-            <Link
-              to="/login"
-              onClick={close}
-              className="border border-white/80 py-4 text-center text-sm font-bold uppercase tracking-[0.15em] hover:border-ice hover:text-ice"
-            >
-              Вход
-            </Link>
-            <Link
-              to="/register"
-              onClick={close}
-              className="border border-white/80 py-4 text-center text-sm font-bold uppercase tracking-[0.15em] hover:border-ice hover:text-ice"
-            >
-              Регистрация
-            </Link>
-          </li>
+          {!isLoading &&
+            (user ? (
+              <li className="flex items-center justify-between gap-3 pt-6">
+                <span className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                  Здравей, <span className="text-ice">{user.firstName}</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="border border-white/80 px-6 py-4 text-sm font-bold uppercase tracking-[0.15em] hover:border-ice hover:text-ice"
+                >
+                  Изход
+                </button>
+              </li>
+            ) : (
+              <li className="grid grid-cols-2 gap-3 pt-6">
+                <Link
+                  to="/login"
+                  onClick={close}
+                  className="border border-white/80 py-4 text-center text-sm font-bold uppercase tracking-[0.15em] hover:border-ice hover:text-ice"
+                >
+                  Вход
+                </Link>
+                <Link
+                  to="/register"
+                  onClick={close}
+                  className="border border-white/80 py-4 text-center text-sm font-bold uppercase tracking-[0.15em] hover:border-ice hover:text-ice"
+                >
+                  Регистрация
+                </Link>
+              </li>
+            ))}
           <li className="pt-3">
             <a
               href="#booking"
