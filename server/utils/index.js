@@ -1,9 +1,14 @@
 const jwt = require('./jwt');
 const auth = require('./auth');
-const errorHandler = require('./errHandler');
+const oauth = require('./oauth');
+const validators = require('./validators');
+const { errorHandler, httpError } = require('./errHandler');
 
 module.exports = {
     jwt,
     auth,
-    errorHandler
+    oauth,
+    validators,
+    errorHandler,
+    httpError,
 }

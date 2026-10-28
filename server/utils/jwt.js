@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const secret = process.env.SECRET || 'SoftSecret';
 
-function createToken(data) {
-    return jwt.sign(data, secret, { expiresIn: '1d' });
+// Нашият собствен токен за сесията (не е токенът от Google/Apple).
+// expiresIn: колко време е валиден — '1d' (1 ден), '7d' (7 дни) и т.н.
+function createToken(data, expiresIn = '1d') {
+    return jwt.sign(data, secret, { expiresIn });
 }
 
 function verifyToken(token) {

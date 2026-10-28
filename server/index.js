@@ -6,8 +6,13 @@ const apiRouter = require('./router');
 const cors = require('cors');
 // const config = require('./config/config');
 const { errorHandler } = require('./utils');
+const { userModel } = require('./models');
 
 dbConnector()
+  // Привеждаме индексите на колекцията users в синхрон със схемата.
+  // Старият модел имаше уникално поле username; ако индексът му остане в базата,
+  // всеки нов потребител без username ще дава грешка "вече съществува".
+  .then(() => userModel.syncIndexes())
   .then(() => {
     const config = require('./config/config');
 
