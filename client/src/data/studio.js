@@ -55,7 +55,7 @@ export const SERVICES = [
 export const MARQUEE_WORDS = ['Crop', 'Design', 'Beard', 'Buzz Cut', 'Fade']
 
 export const TEAM = [
-  { id: 'TB-001', role: 'Главен бръснар', name: '[Име Фамилия]', bio: 'Основател на студиото. [Кратко описание]', lead: true },
+  { id: 'TB-001', role: 'Главен бръснар', name: 'Боян Попов', bio: 'Основател на студиото. [Кратко описание]', lead: true },
   { id: 'TB-002', role: 'Бръснар', name: '[Име Фамилия]', bio: '[Кратко описание]' },
   { id: 'TB-003', role: 'Бръснар', name: '[Име Фамилия]', bio: '[Кратко описание]' },
 ]

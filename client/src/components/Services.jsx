@@ -19,10 +19,6 @@ function Services() {
               </h3>
               <p className="mt-2 text-sm text-white/60">{service.text}</p>
 
-              <div className="mt-auto flex items-center justify-between border-t border-line pt-4 text-sm font-bold uppercase tracking-[0.1em]">
-                <span>{service.price} лв.</span>
-                <span className="font-medium text-white/50">{service.duration}</span>
-              </div>
             </article>
           ))}
         </div>

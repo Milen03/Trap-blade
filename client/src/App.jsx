@@ -13,9 +13,9 @@ function App() {
       <main>
         <Hero />
         <Marquee />
+        <Booking />
         <Services />
         <Team />
-        <Booking />
       </main>
       <Footer />
     </>

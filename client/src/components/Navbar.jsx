@@ -31,7 +31,7 @@ function Navbar() {
             href="#booking"
             className="bg-ice px-5 py-3 text-xs font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-white"
           >
-            Запази стол
+            Запази час
           </a>
         </div>
 

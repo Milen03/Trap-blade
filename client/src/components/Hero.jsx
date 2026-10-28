@@ -13,14 +13,10 @@ function Hero() {
 
           <h1 className="mt-4 font-brand text-7xl leading-[0.95] sm:text-8xl lg:text-[8.5rem]">TrapBlade</h1>
 
-          <p className="mt-6 text-4xl font-bold uppercase leading-[1.05] sm:text-5xl">
-            Влизаш като всички.
-            <br />
-            Излизаш опасен.
-          </p>
+
 
           <p className="mt-6 max-w-md text-white/60">
-            Fade, crop, buzz cut и дизайн с бръснач. Избери бръснар, ден и час — записваш се за под минута.
+            Fade, crop, buzz cut. Избери бръснар, ден и час — записваш се за под минута.
           </p>
 
           <div className="mt-8 flex flex-wrap gap-3">
@@ -28,7 +24,7 @@ function Hero() {
               href="#booking"
               className="flex items-center gap-3 bg-ice px-6 py-4 text-sm font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-white"
             >
-              Запази стол <span aria-hidden="true">→</span>
+              Запази час <span aria-hidden="true">→</span>
             </a>
             <a
               href="#services"
@@ -39,7 +35,7 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative mx-auto w-64 sm:w-72 lg:w-full lg:max-w-[340px]">
+        <div className="relative order-first mx-auto w-64 sm:w-72 lg:order-none lg:w-full lg:max-w-[340px]">
           <div className="rounded-full border border-line p-3">
             <img src={logo} alt="TrapBlade лого" className="w-full rounded-full" />
           </div>
