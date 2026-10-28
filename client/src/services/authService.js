@@ -9,9 +9,8 @@ export function register(data) {
   return api.post('/register', data)
 }
 
-// remember: true -> оставаш логнат 7 дни, false -> до затваряне на браузъра.
-export function login(email, password, remember) {
-  return api.post('/login', { email, password, remember })
+export function login(email, password) {
+  return api.post('/login', { email, password })
 }
 
 export function logout() {

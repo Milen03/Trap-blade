@@ -7,8 +7,10 @@ const utils = require('../utils');
 const { authCookieName } = require('../app-config');
 const { cleanString, pickProfile, validateProfile } = utils.validators;
 
-// "Запомни ме": колко дни остава логнат потребителят.
-const REMEMBER_ME_DAYS = 7;
+// Колко дни важи сесията. Браузърите не пазят бисквитка повече от ~400 дни, затова 365.
+// Всеки път, когато потребителят отвори сайта, сесията се подновява за още 365 дни
+// (виж getProfileInfo), така че който влиза поне веднъж годишно, остава логнат завинаги.
+const SESSION_DAYS = 365;
 
 // Настройки на бисквитката с токена.
 // httpOnly: JavaScript в браузъра НЕ може да я прочете -> защита от XSS.
@@ -20,16 +22,14 @@ function cookieOptions() {
     return { httpOnly: true };
 }
 
-// Създава наш JWT за потребителя и го записва в бисквитката.
-// remember = false -> бисквитката изчезва при затваряне на браузъра (и токенът важи 1 ден).
-// remember = true  -> бисквитката и токенът важат REMEMBER_ME_DAYS дни.
-function setAuthCookie(res, user, remember) {
-    const token = utils.jwt.createToken({ id: user._id }, remember ? `${REMEMBER_ME_DAYS}d` : '1d');
-    const options = cookieOptions();
-    if (remember) {
-        options.maxAge = REMEMBER_ME_DAYS * 24 * 60 * 60 * 1000;
-    }
-    res.cookie(authCookieName, token, options);
+// Създава наш JWT за потребителя и го записва в бисквитката за SESSION_DAYS дни.
+// Бисквитката остава и след затваряне на браузъра — потребителят излиза само с бутона "Изход".
+function setAuthCookie(res, user) {
+    const token = utils.jwt.createToken({ id: user._id }, `${SESSION_DAYS}d`);
+    res.cookie(authCookieName, token, {
+        ...cookieOptions(),
+        maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
+    });
 }
 
 // POST /api/register — регистрация с имейл и парола.
@@ -52,7 +52,7 @@ async function register(req, res, next) {
     try {
         // Паролата се хешира автоматично в userModel (pre 'save').
         const user = await userModel.create({ ...profile, email, password });
-        setAuthCookie(res, user, true);
+        setAuthCookie(res, user);
         // toJSON в модела маха паролата, преди да изпратим потребителя.
         res.status(200).send(user);
     } catch (err) {
@@ -65,7 +65,6 @@ async function register(req, res, next) {
 async function login(req, res, next) {
     const email = cleanString(req.body.email).toLowerCase();
     const password = typeof req.body.password === 'string' ? req.body.password : '';
-    const remember = Boolean(req.body.remember);
 
     try {
         const user = await userModel.findOne({ email });
@@ -75,7 +74,7 @@ async function login(req, res, next) {
             return res.status(401).send({ message: 'Грешен имейл или парола' });
         }
 
-        setAuthCookie(res, user, remember);
+        setAuthCookie(res, user);
         res.status(200).send(user);
     } catch (err) {
         next(err);
@@ -102,8 +101,10 @@ async function logout(req, res) {
 }
 
 // GET /api/users/profile — данните на логнатия потребител.
-// Клиентът вика това при зареждане на сайта, за да разбере дали вече има активна сесия.
+// Клиентът вика това при всяко зареждане на сайта, за да разбере дали вече има активна сесия.
 function getProfileInfo(req, res) {
+    // Подновяваме сесията: нов токен и бисквитка за още SESSION_DAYS дни от днес.
+    setAuthCookie(res, req.user);
     // req.user е зареден от auth() middleware-а.
     res.status(200).json(req.user);
 }
