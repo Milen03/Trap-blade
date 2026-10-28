@@ -17,6 +17,13 @@ dbConnector()
     const config = require('./config/config');
 
     const app = require('express')();
+
+    // В production сървърът стои зад proxy на хостинга (Railway, Render...).
+    // Без това всички заявки изглеждат като от един IP и лимитът за вход би спрял всички.
+    if (process.env.NODE_ENV === 'production') {
+      app.set('trust proxy', 1);
+    }
+
     require('./config/express')(app);
 
     app.use(cors({

@@ -1,7 +1,4 @@
-const {
-    userModel,
-    tokenBlacklistModel
-} = require('../models');
+const { userModel } = require('../models');
 
 const utils = require('../utils');
 const { authCookieName } = require('../app-config');
@@ -25,7 +22,8 @@ function cookieOptions() {
 // Създава наш JWT за потребителя и го записва в бисквитката за SESSION_DAYS дни.
 // Бисквитката остава и след затваряне на браузъра — потребителят излиза само с бутона "Изход".
 function setAuthCookie(res, user) {
-    const token = utils.jwt.createToken({ id: user._id }, `${SESSION_DAYS}d`);
+    // v = текущата версия на сесиите на потребителя (виж logout и utils/auth.js).
+    const token = utils.jwt.createToken({ id: user._id, v: user.tokenVersion }, `${SESSION_DAYS}d`);
     res.cookie(authCookieName, token, {
         ...cookieOptions(),
         maxAge: SESSION_DAYS * 24 * 60 * 60 * 1000,
@@ -81,14 +79,14 @@ async function login(req, res, next) {
     }
 }
 
-// POST /api/logout — изход.
-// Слагаме токена в "черен списък", за да не може да се ползва повече, и трием бисквитката.
+// POST /api/logout — изход от ВСИЧКИ устройства.
+// Увеличаваме tokenVersion на потребителя -> всички издадени досега токени стават невалидни
+// (и на този браузър, и на телефона, и на чужд компютър, където е забравил да излезе).
 async function logout(req, res) {
-    const token = req.cookies[authCookieName];
-
     try {
-        if (token) {
-            await tokenBlacklistModel.create({ token });
+        // req.user го има само ако сесията е валидна (виж auth(false) в router/index.js).
+        if (req.user) {
+            await userModel.updateOne({ _id: req.user._id }, { $inc: { tokenVersion: 1 } });
         }
     } catch (err) {
         console.error(err);
