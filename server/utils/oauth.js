@@ -22,6 +22,8 @@ const PROVIDERS = {
         issuer: ['accounts.google.com', 'https://accounts.google.com'],
         // Client ID от Google Cloud Console (същият като VITE_GOOGLE_CLIENT_ID в клиента).
         clientIdEnv: 'GOOGLE_CLIENT_ID',
+        // Ползва се, ако GOOGLE_CLIENT_ID липсва в .env. Client ID-то е публично — няма проблем да е в кода.
+        defaultClientId: '323737991336-7o24jdltf0lqgh5pm3q4prs0asmtm5il.apps.googleusercontent.com',
     },
     apple: {
         name: 'Apple',
@@ -51,7 +53,7 @@ function getKeyClient(providerName) {
 // { sub: '1234567890', email: 'ivan@gmail.com', email_verified: true, given_name: 'Иван', ... }
 function verifyIdToken(providerName, idToken) {
     const provider = PROVIDERS[providerName];
-    const clientId = process.env[provider.clientIdEnv];
+    const clientId = process.env[provider.clientIdEnv] || provider.defaultClientId;
 
     if (!clientId) {
         return Promise.reject(httpError(500, `Входът с ${provider.name} не е настроен на сървъра (липсва ${provider.clientIdEnv}).`));
