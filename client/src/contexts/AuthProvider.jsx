@@ -46,10 +46,6 @@ function AuthProvider({ children }) {
       isLoading,
       login: (email, password, remember) => saveUser(authService.login(email, password, remember)),
       register: (data) => saveUser(authService.register(data)),
-      loginWithGoogle: (credential) => saveUser(authService.loginWithGoogle(credential)),
-      loginWithApple: (appleData) => saveUser(authService.loginWithApple(appleData)),
-      // Записва име, фамилия и телефон след вход с Google/Apple.
-      completeProfile: (data) => saveUser(authService.updateProfile(data)),
       logout: async () => {
         try {
           await authService.logout()
