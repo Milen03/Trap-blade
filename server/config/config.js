@@ -15,12 +15,15 @@ const config = {
         // Можеш да я смениш с DB_URL в server/.env.
         dbURL: process.env.DB_URL || 'mongodb://localhost:27017/trapblade',
         // 5173 е портът на Vite (npm run dev в client/).
-        origin: ['http://localhost:5173', 'http://localhost:5555', 'http://localhost:4200', ...clientOrigins]
+        origin: ['http://localhost:5173', 'http://localhost:5555', 'http://localhost:4200', ...clientOrigins],
+        // Адресът на сайта — от него се правят линковете в писмата (например за нова парола).
+        clientUrl: process.env.CLIENT_URL || 'http://localhost:5173'
     },
     production: {
         port: process.env.PORT || 3000,
         dbURL: process.env.DB_URL_CREDENTIALS,
-        origin: clientOrigins
+        origin: clientOrigins,
+        clientUrl: process.env.CLIENT_URL || clientOrigins[0]
     }
 };
 

@@ -46,6 +46,8 @@ function AuthProvider({ children }) {
       isLoading,
       login: (email, password) => saveUser(authService.login(email, password)),
       register: (data) => saveUser(authService.register(data)),
+      // Записва новата парола и логва потребителя (виж ResetPassword.jsx).
+      resetPassword: (token, password, rePassword) => saveUser(authService.resetPassword(token, password, rePassword)),
       logout: async () => {
         try {
           await authService.logout()

@@ -7,6 +7,9 @@ const { authController } = require('../controllers');
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/logout', authController.logout);
+// Забравена парола: 1) иска линк по имейл, 2) записва нова парола с кода от линка.
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
 
 router.use('/users', users);
 router.use('/test', test);

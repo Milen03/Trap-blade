@@ -74,9 +74,9 @@ function Login() {
         />
 
         <div className="flex justify-end">
-          <a href="#" className="text-white/70 underline underline-offset-4 hover:text-ice">
+          <Link to="/forgot-password" className="text-white/70 underline underline-offset-4 hover:text-ice">
             Забравена парола?
-          </a>
+          </Link>
         </div>
 
         <FormError message={error} />
