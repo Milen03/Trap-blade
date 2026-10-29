@@ -3,7 +3,9 @@ const {
     tokenBlacklistModel
 } = require('../models');
 
+const crypto = require('crypto');
 const utils = require('../utils');
+const config = require('../config/config');
 const { authCookieName } = require('../app-config');
 const { cleanString, pickProfile, validateProfile } = utils.validators;
 
@@ -130,10 +132,113 @@ async function editProfileInfo(req, res, next) {
     }
 }
 
+// ---------- Забравена парола ----------
+
+// Колко минути важи линкът от писмото.
+const RESET_LINK_MINUTES = 60;
+// Колко минути трябва да минат, преди да пратим ново писмо на същия имейл
+// (за да не може някой да залее чужда поща с писма).
+const RESET_COOLDOWN_MINUTES = 2;
+
+// Кодът от линка го пазим в базата само като SHA-256 хеш.
+function hashResetToken(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+// POST /api/forgot-password — тяло: { email }.
+// Ако има такъв потребител, генерира еднократен код и праща писмо с линк за нова парола.
+async function forgotPassword(req, res, next) {
+    const email = cleanString(req.body.email).toLowerCase();
+    // Винаги връщаме едно и също съобщение — иначе всеки би могъл да проверява
+    // дали даден имейл е регистриран при нас.
+    const message = 'Ако има профил с този имейл, изпратихме ти линк за нова парола. Провери пощата си (и папка Спам).';
+
+    if (!email) {
+        return res.status(400).send({ message: 'Въведи имейл' });
+    }
+
+    try {
+        const user = await userModel.findOne({ email });
+
+        // Писмо пращаме само ако има потребител и не сме му пратили друго преди малко.
+        const lastSentAt = user && user.resetPasswordExpires
+            ? user.resetPasswordExpires.getTime() - RESET_LINK_MINUTES * 60 * 1000
+            : 0;
+        const canSend = user && Date.now() - lastSentAt > RESET_COOLDOWN_MINUTES * 60 * 1000;
+
+        if (canSend) {
+            // 32 случайни байта -> 64 знака. Невъзможно е да се познае.
+            const token = crypto.randomBytes(32).toString('hex');
+
+            // updateOne вместо save(), за да не пускаме валидацията на целия профил.
+            await userModel.updateOne({ _id: user._id }, {
+                resetPasswordHash: hashResetToken(token),
+                resetPasswordExpires: new Date(Date.now() + RESET_LINK_MINUTES * 60 * 1000),
+            });
+
+            const link = `${config.clientUrl}/reset-password?token=${token}`;
+            const mail = utils.emails.resetPasswordEmail({ firstName: user.firstName, link, minutes: RESET_LINK_MINUTES });
+
+            try {
+                await utils.mailer.sendMail({ to: user.email, ...mail });
+            } catch (err) {
+                // Не казваме на клиента, че писмото не е тръгнало (пак би издало, че имейлът съществува),
+                // но го пишем в конзолата, за да го видиш.
+                console.error('Писмото за нова парола не е изпратено:', err.message);
+            }
+        }
+
+        res.status(200).send({ message });
+    } catch (err) {
+        next(err);
+    }
+}
+
+// POST /api/reset-password — тяло: { token, password, rePassword }.
+// Проверява кода от линка, записва новата парола и логва потребителя.
+async function resetPassword(req, res, next) {
+    const token = cleanString(req.body.token);
+    const { password, rePassword } = req.body;
+
+    if (typeof password !== 'string' || password.length < 6) {
+        return res.status(400).send({ message: 'Паролата трябва да е поне 6 символа' });
+    }
+    if (password !== rePassword) {
+        return res.status(400).send({ message: 'Паролите не съвпадат' });
+    }
+
+    try {
+        // Търсим потребител със същия хеш на кода и неизтекъл срок.
+        const user = token && await userModel.findOne({
+            resetPasswordHash: hashResetToken(token),
+            resetPasswordExpires: { $gt: new Date() },
+        });
+
+        if (!user) {
+            return res.status(400).send({ message: 'Линкът е невалиден или е изтекъл. Поискай нов.' });
+        }
+
+        // Новата парола се хешира автоматично в userModel (pre 'save').
+        user.password = password;
+        // Изтриваме кода -> линкът не може да се ползва втори път.
+        user.resetPasswordHash = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        // Логваме го директно, за да не въвежда новата парола веднага пак.
+        setAuthCookie(res, user);
+        res.status(200).send(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     login,
     register,
     logout,
+    forgotPassword,
+    resetPassword,
     getProfileInfo,
     editProfileInfo,
 }

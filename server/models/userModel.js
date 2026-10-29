@@ -34,13 +34,19 @@ const userSchema = new mongoose.Schema({
             message: 'Невалиден телефонен номер',
         },
     },
+    // "Забравена парола": хеш на кода от линка в писмото и до кога е валиден.
+    // Пазим само хеша (SHA-256) — ако някой види базата, от него не може да направи работещ линк.
+    resetPasswordHash: String,
+    resetPasswordExpires: Date,
 }, {
     timestamps: { createdAt: 'created_at' },
     // Когато пращаме потребителя като JSON към клиента,
-    // махаме паролата (хеша) и __v, за да не излизат никога навън.
+    // махаме паролата (хеша), данните за смяна на парола и __v, за да не излизат никога навън.
     toJSON: {
         transform: (doc, ret) => {
             delete ret.password;
+            delete ret.resetPasswordHash;
+            delete ret.resetPasswordExpires;
             delete ret.__v;
             return ret;
         },
