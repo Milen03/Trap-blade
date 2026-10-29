@@ -40,8 +40,9 @@ function Navbar() {
             <div className="flex items-center gap-5 border-l border-line pl-8">
               {user ? (
                 <>
-                  <span className="text-xs font-semibold uppercase tracking-[0.15em] text-white/80">
-                    Здравей, <span className="text-ice">{user.firstName}</span>
+                  <span className="flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-white/80">
+                    <span className="font-gothic text-xl normal-case leading-none tracking-normal">Welcome</span>
+                    <span className="text-xl leading-none text-ice">{user.firstName}</span>
                   </span>
                   <button
                     type="button"
@@ -106,8 +107,9 @@ function Navbar() {
           {!isLoading &&
             (user ? (
               <li className="flex items-center justify-between gap-3 pt-6">
-                <span className="text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
-                  Здравей, <span className="text-ice">{user.firstName}</span>
+                <span className="flex items-baseline gap-2 text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                  <span className="font-gothic text-2xl normal-case leading-none tracking-normal">Welcome</span>
+                  <span className="text-2xl leading-none text-ice">{user.firstName}</span>
                 </span>
                 <button
                   type="button"
