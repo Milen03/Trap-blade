@@ -26,38 +26,34 @@ export const SERVICES = [
     id: 'buzz-cut',
     name: 'Buzz Cut',
     text: 'Машинка на една дължина. Чисто, остро, без излишни приказки.',
-    price: '[Цена]',
-    duration: '[Мин.]',
+
   },
   {
     id: 'fade',
     name: 'Fade',
     text: 'Плавен преход от кожа до коса. Ниско, средно или високо — ти казваш.',
-    price: '[Цена]',
-    duration: '[Мин.]',
+   
   },
   {
     id: 'crop',
     name: 'Crop',
     text: 'Текстуриран връх с къси страни. Модерна класика за всеки ден.',
-    price: '[Цена]',
-    duration: '[Мин.]',
+   
   },
   {
     id: 'design',
     name: 'Design',
     text: 'Линии и шарки с бръснач. Подпис, който се вижда отдалеч.',
-    price: '[Цена]',
-    duration: '[Мин.]',
+   
   },
 ]
 
 export const MARQUEE_WORDS = ['Crop', 'Design', 'Beard', 'Buzz Cut', 'Fade']
 
 export const TEAM = [
-  { id: 'TB-001', role: 'Главен бръснар', name: 'Боян Попов', bio: 'Основател на студиото. [Кратко описание]', lead: true },
-  { id: 'TB-002', role: 'Бръснар', name: '[Име Фамилия]', bio: '[Кратко описание]' },
-  { id: 'TB-003', role: 'Бръснар', name: '[Име Фамилия]', bio: '[Кратко описание]' },
+  { id: 'TB-001', role: 'Главен бръснар', name: 'Боян Попов', bio: 'Основател на студиото.', lead: true },
+  { id: 'TB-002', role: 'Бръснар', name: '[Име Фамилия]', },
+  { id: 'TB-003', role: 'Бръснар', name: '[Име Фамилия]',  },
 ]
 
 export const BOOKING_STEPS = [

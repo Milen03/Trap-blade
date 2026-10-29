@@ -5,7 +5,7 @@ function Services() {
   return (
     <section id="services" className="scroll-mt-16 py-20 sm:py-24">
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <SectionHeader title="Услугите" note="Без компромиси. Без бързане." />
+        <SectionHeader title="Услугите" />
 
         <div className="grid gap-px border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
           {SERVICES.map((service, i) => (
