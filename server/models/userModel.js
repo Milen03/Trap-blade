@@ -34,6 +34,16 @@ const userSchema = new mongoose.Schema({
             message: 'Невалиден телефонен номер',
         },
     },
+    // Роля: client (клиент), barber (бръснар), owner (собственик).
+    // При регистрация винаги е client — роля се дава само от scripts/seed.js.
+    role: {
+        type: String,
+        enum: {
+            values: ['client', 'barber', 'owner'],
+            message: 'Невалидна роля',
+        },
+        default: 'client',
+    },
     // "Забравена парола": хеш на кода от линка в писмото и до кога е валиден.
     // Пазим само хеша (SHA-256) — ако някой види базата, от него не може да направи работещ линк.
     resetPasswordHash: String,

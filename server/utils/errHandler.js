@@ -19,10 +19,13 @@ function errorHandler(err, req, res, next) {
 
     // Дублиран уникален ключ в MongoDB (например вече регистриран имейл).
     if (err.code === 11000) {
-        const field = Object.keys(err.keyValue || err.keyPattern || {})[0];
-        const message = field === 'email'
-            ? 'Този имейл вече е регистриран'
-            : 'Такъв профил вече съществува';
+        const fields = Object.keys(err.keyValue || err.keyPattern || {});
+        let message = 'Такъв профил вече съществува';
+        if (fields.includes('email')) {
+            message = 'Този имейл вече е регистриран';
+        } else if (fields.includes('barber') && fields.includes('date')) {
+            message = 'За тази дата вече има график';
+        }
         res.status(409)
             .json({ message });
         return;
