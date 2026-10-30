@@ -4,8 +4,14 @@
 // Данните са в .env: SEED_OWNER_*, SEED_BARBER1_*, SEED_BARBER2_* (виж .env.example).
 // - Ако имейлът вече е регистриран -> само му слагаме ролята (паролата и името остават).
 // - Ако го няма -> създаваме профил с паролата от .env.
+// - Профил с празен ..._EMAIL се прескача (например ако бръснарите още нямат имейли).
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, '..', '.env') });
+const ENV_PATH = path.resolve(__dirname, '..', '.env');
+const dotenvResult = require('dotenv').config({ path: ENV_PATH });
+if (dotenvResult.error) {
+    console.error(`Не намирам файла ${ENV_PATH}. Копирай .env.example като .env в папка server/.`);
+    process.exit(1);
+}
 
 const mongoose = require('mongoose');
 const dbConnector = require('../config/db');
@@ -50,14 +56,16 @@ async function seedAccount(account) {
 }
 
 async function main() {
-    const accounts = ACCOUNTS.map(readAccount);
-
     // Проверяваме .env, преди да се свързваме с базата.
-    accounts.forEach(({ prefix, email }) => {
+    const accounts = ACCOUNTS.map(readAccount).filter(({ prefix, email }) => {
         if (!email) {
-            throw new Error(`Липсва ${prefix}_EMAIL в .env`);
+            console.log(`- ${prefix}_EMAIL е празен в ${ENV_PATH} — пропускам`);
         }
+        return Boolean(email);
     });
+    if (accounts.length === 0) {
+        throw new Error(`Няма нито един попълнен SEED_..._EMAIL в ${ENV_PATH}`);
+    }
     const emails = accounts.map((account) => account.email);
     if (new Set(emails).size !== emails.length) {
         throw new Error('Имейлите на собственика и бръснарите трябва да са различни');
