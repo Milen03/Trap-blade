@@ -26,12 +26,7 @@ function Hero() {
             >
               Запази час <span aria-hidden="true">→</span>
             </a>
-            <a
-              href="#services"
-              className="border border-white/80 px-6 py-4 text-sm font-bold uppercase tracking-[0.15em] transition-colors hover:border-ice hover:text-ice"
-            >
-              Виж услугите
-            </a>
+            
           </div>
         </div>
 

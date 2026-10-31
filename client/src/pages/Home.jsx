@@ -14,7 +14,7 @@ function Home() {
         <Hero />
         <Marquee />
         <Booking />
-        <Services />
+
         <Team />
       </main>
       <Footer />
