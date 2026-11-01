@@ -4,8 +4,11 @@ Express + MongoDB (mongoose) бекенд за записване на часо�
 
 ## Пускане
 
+Създай `server/.env` (не се качва в git) с поне `SECRET` и `COOKIESECRET` (дълги случайни низове),
+`DB_URL` (по подразбиране `mongodb://localhost:27017/trapblade`) и `SEED_OWNER_*`, `SEED_BARBER1_*`,
+`SEED_BARBER2_*` (`_EMAIL`, `_PASSWORD`) за акаунтите на бръснарите.
+
 ```bash
-cp .env.example .env   # попълни SECRET, COOKIESECRET и SEED_* имейлите
 npm install
 npm run seed           # създава собственика и бръснарите (роли, титли, услуги и цени)
 npm start              # http://localhost:3000/api

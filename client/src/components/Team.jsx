@@ -10,9 +10,8 @@ function RadioDot({ checked }) {
   return (
     <span
       aria-hidden="true"
-      className={`grid size-[18px] shrink-0 place-items-center rounded-full transition-colors ${
-        checked ? 'border-2 border-ice bg-ice/25' : 'bg-white'
-      }`}
+      className={`grid size-[18px] shrink-0 place-items-center rounded-full transition-colors ${checked ? 'border-2 border-ice bg-ice/25' : 'bg-white'
+        }`}
     >
       {checked && <span className="size-2.5 rounded-full bg-ice" />}
     </span>
@@ -24,9 +23,8 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
 
   return (
     <article
-      className={`flex flex-col border transition-colors ${
-        selected ? 'border-ice bg-[#0d1117]' : 'border-line bg-coal hover:border-white/25'
-      }`}
+      className={`flex flex-col border transition-colors ${selected ? 'border-ice bg-[#0d1117]' : 'border-line bg-coal hover:border-white/25'
+        }`}
     >
       {/* Header: id, badges, barber toggle, name */}
       <div className="border-b border-line px-6 pb-4 pt-6" style={STRIPES}>
@@ -55,9 +53,8 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
             <span className="rounded-full peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-ice">
               <span
                 aria-hidden="true"
-                className={`grid size-6 place-items-center rounded-full transition-colors ${
-                  selected ? 'border-2 border-ice bg-ice/25' : 'bg-white'
-                }`}
+                className={`grid size-6 place-items-center rounded-full transition-colors ${selected ? 'border-2 border-ice bg-ice/25' : 'bg-white'
+                  }`}
               >
                 {selected && <span className="size-3.5 rounded-full bg-ice" />}
               </span>
@@ -86,9 +83,8 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
             return (
               <li key={service.id}>
                 <label
-                  className={`flex cursor-pointer items-center gap-3 border px-4 py-3 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ice ${
-                    checked ? 'border-ice bg-ice/10' : 'border-line bg-ink hover:border-white/25'
-                  }`}
+                  className={`flex cursor-pointer items-center gap-3 border px-4 py-3 transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-ice ${checked ? 'border-ice bg-ice/10' : 'border-line bg-ink hover:border-white/25'
+                    }`}
                 >
                   <input
                     type="radio"
@@ -124,11 +120,10 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
           <button
             type="button"
             onClick={() => onSelectBarber(barber.id)}
-            className={`mt-5 flex w-full items-center justify-center gap-3 border-2 py-4 text-sm font-bold uppercase tracking-[0.3em] transition-colors ${
-              selected
+            className={`mt-5 flex w-full items-center justify-center gap-3 border-2 py-4 text-sm font-bold uppercase tracking-[0.3em] transition-colors ${selected
                 ? 'border-ice bg-ice text-ink hover:bg-white hover:border-white'
                 : 'border-white/25 bg-transparent text-white hover:border-ice hover:text-ice'
-            }`}
+              }`}
           >
             Запиши час
             <span aria-hidden="true">→</span>
@@ -153,10 +148,6 @@ function Team() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="mb-12 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p className="flex items-center gap-4 text-xs font-semibold uppercase tracking-[0.35em] text-ice">
-              <span aria-hidden="true" className="h-px w-10 bg-ice" />
-              Издирвани за добри прически
-            </p>
             <h2 className="mt-4 text-7xl font-bold uppercase leading-none sm:text-8xl">Екипът</h2>
           </div>
           <p className="max-w-sm text-white/60 lg:mb-3">

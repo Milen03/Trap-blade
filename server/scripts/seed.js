@@ -1,7 +1,7 @@
 // Създава (или обновява) профилите на собственика и бръснарите.
 // Пускане: npm run seed  (от папка server/)
 //
-// Данните са в .env: SEED_OWNER_*, SEED_BARBER1_*, SEED_BARBER2_* (виж .env.example).
+// Данните са в .env: SEED_OWNER_*, SEED_BARBER1_*, SEED_BARBER2_* (_EMAIL, _PASSWORD, по желание _FIRST_NAME, _LAST_NAME).
 // - Ако имейлът вече е регистриран -> слагаме му ролята, титлата и услугите (паролата и името остават).
 // - Ако го няма -> създаваме профил с паролата от .env.
 // - Профил с празен ..._EMAIL се прескача (например ако бръснарите още нямат имейли).
@@ -9,7 +9,7 @@ const path = require('path');
 const ENV_PATH = path.resolve(__dirname, '..', '.env');
 const dotenvResult = require('dotenv').config({ path: ENV_PATH });
 if (dotenvResult.error) {
-    console.error(`Не намирам файла ${ENV_PATH}. Копирай .env.example като .env в папка server/.`);
+    console.error(`Не намирам файла ${ENV_PATH}. Създай .env в папка server/ (виж readme.md).`);
     process.exit(1);
 }
 
