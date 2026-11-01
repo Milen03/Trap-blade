@@ -1,36 +1,32 @@
-const { workDayModel } = require('../models');
-const { httpError, schedule } = require('../utils');
+const { workDayModel, appointmentModel } = require('../models');
+const { httpError, schedule, validators } = require('../utils');
 
 // Работно време по подразбиране: 10:00–21:00 през 30 минути, почивка в неделя (0).
 const DEFAULT_FROM = '10:00';
 const DEFAULT_TO = '21:00';
 const DEFAULT_STEP = 30;
 const DEFAULT_DAYS_OFF = [0];
-// Докъде напред може да се прави график.
-const MAX_MONTHS_AHEAD = 12;
-
-const OBJECT_ID_REGEX = /^[0-9a-f]{24}$/i;
 
 // ВАЖНО: всички промени са върху графика на req.user (логнатия бръснар/собственик).
 // Никъде не четем id на бръснар от тялото на заявката.
 
-function checkMonthRange(month) {
-    const diff = schedule.monthsFromNow(month);
-    if (diff < 0) {
-        throw httpError(400, 'Не може да правиш график за минал месец');
-    }
-    if (diff > MAX_MONTHS_AHEAD) {
-        throw httpError(400, `Графикът може да е най-много ${MAX_MONTHS_AHEAD} месеца напред`);
-    }
-}
+const { checkMonthRange, checkEditableDate } = schedule;
 
-// Ден, който може да се променя: валидна дата, не е минала и не е твърде напред.
-function checkEditableDate(date) {
-    schedule.assertDate(date);
-    if (date < schedule.today()) {
-        throw httpError(400, 'Не може да променяш минал ден');
+// Хвърля 409, ако бръснарят има записани клиенти в някой от часовете, които маха.
+// times: часовете, които ще изчезнат; null -> целия ден (например става почивен).
+async function assertNoBookings(barber, date, times) {
+    const filter = { barber, date, status: 'booked' };
+    if (times) {
+        if (times.length === 0) {
+            return;
+        }
+        filter.time = { $in: times };
     }
-    checkMonthRange(date.slice(0, 7));
+    const booked = await appointmentModel.find(filter).select('time').sort({ time: 1 });
+    if (booked.length) {
+        const list = booked.map((a) => a.time).join(', ');
+        throw httpError(409, `Имаш записани клиенти в ${list}. Първо отмени часовете им.`);
+    }
 }
 
 // Точен списък с часове от клиента -> проверени, без повторения, подредени.
@@ -156,6 +152,15 @@ async function updateDay(req, res, next) {
             throw httpError(400, 'Няма какво да се промени. Подай dayOff, from/to, slots или note.');
         }
 
+        // Не позволяваме тихо да изчезне час, в който вече има записан клиент.
+        if (update.dayOff === true) {
+            await assertNoBookings(req.user._id, date, null);
+        } else if (update.slots) {
+            const existingDay = await workDayModel.findOne({ barber: req.user._id, date }).select('slots');
+            const removed = existingDay ? existingDay.slots.filter((t) => !update.slots.includes(t)) : [];
+            await assertNoBookings(req.user._id, date, removed);
+        }
+
         const day = await workDayModel.findOneAndUpdate(
             { barber: req.user._id, date },
             { $set: update },
@@ -190,6 +195,7 @@ async function toggleSlot(req, res, next) {
                 { new: true }
             );
         } else {
+            await assertNoBookings(barber, date, [time]);
             day = await workDayModel.findOneAndUpdate(
                 { barber, date },
                 { $pull: { slots: time } },
@@ -227,7 +233,7 @@ async function getMonth(req, res, next) {
 
         if (req.user.role === 'owner') {
             if (barberId !== undefined) {
-                if (typeof barberId !== 'string' || !OBJECT_ID_REGEX.test(barberId)) {
+                if (!validators.isObjectId(barberId)) {
                     throw httpError(400, 'Невалиден barberId');
                 }
                 filter.barber = barberId;

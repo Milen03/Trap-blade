@@ -23,6 +23,9 @@ function errorHandler(err, req, res, next) {
         let message = 'Такъв профил вече съществува';
         if (fields.includes('email')) {
             message = 'Този имейл вече е регистриран';
+        } else if (fields.includes('barber') && fields.includes('time')) {
+            // Уникалният индекс в appointmentModel: някой друг току-що е взел същия час.
+            message = 'Този час току-що беше зает. Избери друг.';
         } else if (fields.includes('barber') && fields.includes('date')) {
             message = 'За тази дата вече има график';
         }

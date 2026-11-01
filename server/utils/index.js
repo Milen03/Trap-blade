@@ -6,6 +6,7 @@ const emails = require('./emails');
 const { errorHandler, httpError } = require('./errHandler');
 const { requireRole } = require('./roles');
 const schedule = require('./schedule');
+const availability = require('./availability');
 
 module.exports = {
     jwt,
@@ -15,6 +16,7 @@ module.exports = {
     mailer,
     emails,
     schedule,
+    availability,
     errorHandler,
     httpError,
 }

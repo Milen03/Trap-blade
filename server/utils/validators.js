@@ -2,6 +2,13 @@
 // Пример: "0888 123 456" или "+359 888 123 456".
 const PHONE_REGEX = /^\+?[0-9\s\-()]{7,20}$/;
 
+// MongoDB ObjectId като текст: 24 шестнайсетични знака.
+const OBJECT_ID_REGEX = /^[0-9a-f]{24}$/i;
+
+function isObjectId(value) {
+    return typeof value === 'string' && OBJECT_ID_REGEX.test(value);
+}
+
 // Превръща стойност от req.body в изчистен текст.
 // Ако някой прати число, обект и т.н. вместо текст, получаваме празен низ —
 // така { "$ne": null } не може да се промъкне в заявка към базата.
@@ -39,6 +46,7 @@ function validateProfile({ firstName, lastName, phone }) {
 
 module.exports = {
     PHONE_REGEX,
+    isObjectId,
     cleanString,
     pickProfile,
     validateProfile,
