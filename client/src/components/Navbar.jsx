@@ -71,7 +71,7 @@ function Navbar() {
             </div>
           )}
           <a
-            href="#booking"
+            href="#team"
             className="bg-ice px-5 py-3 text-xs font-bold uppercase tracking-[0.15em] text-ink transition-colors hover:bg-white"
           >
             Запази час
@@ -139,7 +139,7 @@ function Navbar() {
             ))}
           <li className="pt-3">
             <a
-              href="#booking"
+              href="#team"
               onClick={close}
               className="block bg-ice py-4 text-center text-sm font-bold uppercase tracking-[0.15em] text-ink"
             >

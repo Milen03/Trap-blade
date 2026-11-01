@@ -50,10 +50,37 @@ export const SERVICES = [
 
 export const MARQUEE_WORDS = ['Crop', 'Design', 'Beard', 'Buzz Cut', 'Fade']
 
+// Prices are in euro and differ per barber.
+const SERVICE_NAMES = {
+  hair: 'Коса',
+  'hair-beard': 'Коса + брада',
+  beard: 'Брада',
+  kids: 'Детско',
+}
+
+const priceList = (prices) =>
+  Object.entries(prices).map(([id, price]) => ({ id, name: SERVICE_NAMES[id], price }))
+
 export const TEAM = [
-  { id: 'TB-001', role: 'Главен бръснар', name: 'Боян Попов', bio: 'Основател на студиото.', lead: true },
-  { id: 'TB-002', role: 'Бръснар', name: 'Иван Мешеков', },
-  { id: 'TB-003', role: 'Бръснар', name: 'Павлин Пенчев',  },
+  {
+    id: 'TB-001',
+    role: 'Главен бръснар',
+    name: 'Боян Попов',
+    lead: true,
+    services: priceList({ hair: 15, 'hair-beard': 20, beard: 12, kids: 12 }),
+  },
+  {
+    id: 'TB-002',
+    role: 'Бръснар',
+    name: 'Иван Мешеков',
+    services: priceList({ hair: 10, 'hair-beard': 14, beard: 7, kids: 8 }),
+  },
+  {
+    id: 'TB-003',
+    role: 'Бръснар',
+    name: 'Павлин Пенчев',
+    services: priceList({ hair: 10, 'hair-beard': 14, beard: 7, kids: 8 }),
+  },
 ]
 
 export const BOOKING_STEPS = [

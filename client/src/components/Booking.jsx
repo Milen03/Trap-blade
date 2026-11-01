@@ -1,4 +1,4 @@
-import { BOOKING_STEPS, STUDIO } from '../data/studio.js'
+import { BOOKING_STEPS } from '../data/studio.js'
 
 function Booking() {
   return (
@@ -12,9 +12,8 @@ function Booking() {
               си стола
             </h2>
             <p className="mt-4 text-white/60">Бързо и лесно — няколко клика и часът е твой.</p>
-            {/* Until online booking exists, the call-to-action rings the studio. */}
             <a
-              href={STUDIO.phoneHref}
+              href="#team"
               className="mt-6 inline-block bg-ice px-6 py-4 text-sm font-bold uppercase tracking-[0.2em] text-ink transition-colors hover:bg-white"
             >
               Започни записване
