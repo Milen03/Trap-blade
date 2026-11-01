@@ -1,176 +1,73 @@
-# REST-api for Angular course in SoftUni
+# TrapBlade API
 
-## Getting started
-Let's make our first API request to the REST-api!
+Express + MongoDB (mongoose) бекенд за записване на часове при бръснарите на TrapBlade.
 
-In the example below, we're trying to get information about the REST-api:
+## Пускане
 
-```https://localhost:3000/api/test```
-
-Here is the response we get:
-
-```
-{
-    "name": "rest-api",
-    "version": "1.0.0",
-    "description": "REST-api for back-end of Angular course workshop in SoftUni",
-    "main": "index.js",
-}
+```bash
+cp .env.example .env   # попълни SECRET, COOKIESECRET и SEED_* имейлите
+npm install
+npm run seed           # създава собственика и бръснарите (роли, титли, услуги и цени)
+npm start              # http://localhost:3000/api
+npm test               # unit тестове (node --test)
 ```
 
-If your response looks slightly different don't panic. This is probably because more data has been added to the API since I made this documentation.
+В production (`NODE_ENV=production`) сървърът не тръгва без `SECRET` и `COOKIESECRET`.
 
-## Base URL
-The Base URL is the root URL for all of the API, if you ever make a request to the API and you get back a 404 NOT FOUND response then check the Base URL first.
+## Роли
 
-The Base URL for the API is:
+| Роля | Кой | Какво може |
+|---|---|---|
+| `client` | всеки регистриран | записва, гледа и отменя своите часове |
+| `barber` | бръснар | прави своя график, вижда своите часове, вписва клиенти, отменя |
+| `owner` | главният бръснар | като `barber` + вижда графика и часовете на всички |
 
-```https://localhost:3000/api```
+Ролите се дават само от `npm run seed`. При регистрация винаги е `client`.
 
-The documentation below assumes you are prepending the Base URL to the endpoints in order to make requests.
+Всички дати са `YYYY-MM-DD`, часовете са `HH:mm`, а месеците `YYYY-MM`. Часовата зона е Europe/Sofia.
+Грешките винаги идват като `{ "message": "..." }` (на български).
 
-## Authentication
-This API isn't open API. Authentication is required to store and get data. You can use the connected REACT-app to make registration and sign in. This also means that I've limited what you can do. If you find a mistake, then just write an issue.
+## Вход и профил
 
-# Endpoints: Users
+| Метод | Път | Тяло / бележки |
+|---|---|---|
+| POST | `/register` | `{ email, password, rePassword, firstName, lastName, phone }` |
+| POST | `/login` | `{ email, password }` |
+| POST | `/logout` | — |
+| POST | `/forgot-password` | `{ email }`: праща линк по имейл |
+| POST | `/reset-password` | `{ token, password, rePassword }` |
+| GET | `/users/profile` | логнатият потребител (подновява сесията) |
+| PUT | `/users/profile` | `{ firstName, lastName, phone }` |
 
-* ```/users/register``` -- signing up;
-* ```/users/login``` -- signing in;
-* ```/users/logout``` -- logging out;
+Сесията е JWT в httpOnly бисквитка (`auth-cookie`).
 
-## Register User
-Signs up user and returns the registered data as json.
+## Бръснари и свободни часове (публично)
 
-### URL --> ```/users/register```
+| Метод | Път | Отговор |
+|---|---|---|
+| GET | `/barbers` | `[{ _id, firstName, lastName, title, isLead, services: [{ id, name, price }] }]` |
+| GET | `/availability?barberId=&date=` | `{ date, slots: ["10:00", ...] }`: свободните часове за деня (без заетите и без вече започналите днес) |
+| GET | `/availability?barberId=&month=` | `[{ date, free }]`: дните с поне един свободен час (за календар) |
 
-### Method --> ```POST```
+## Записване (с вход)
 
-### Body -->
+| Метод | Път | Кой | Бележки |
+|---|---|---|---|
+| POST | `/appointments` | логнат | `{ barberId, date, time, serviceId }`. Часът трябва да е от графика и свободен. Най-много 2 предстоящи часа на клиент. Двойно записване → 409. |
+| GET | `/appointments/mine` | логнат | всички мои часове |
+| PATCH | `/appointments/:id/cancel` | клиент / бръснар / owner | клиентът може да отмени най-късно 2 часа преди часа |
+| GET | `/appointments?date=` или `?month=` `[&barberId=][&status=]` | barber, owner | barber вижда своите, owner вижда всички |
+| POST | `/appointments/manual` | barber, owner | `{ date, time, clientName, clientPhone?, serviceId?, barberId? }`: бръснарят вписва клиент (часът може да е извън слотовете); `barberId` е само за owner |
 
-```
-{
-    "name":"John Doe",
-    "email":"john@email.com",
-    "username":"Johny",
-    "password":"12345",
-    "rePassword":"12345"
-}
-```
+Статуси на час: `booked`, `cancelled`, `completed`, `no_show`.
 
-Required:
+## График (barber, owner)
 
-```email``` : [string] -- The email of the person is required and must be unique;
+| Метод | Път | Тяло |
+|---|---|---|
+| GET | `/schedule?month=[&barberId=]` | дните от графика (owner вижда всички) |
+| POST | `/schedule/generate` | `{ month, from?, to?, step?, daysOff? }`. По подразбиране 10:00–21:00 през 30 мин, почивка в неделя. Съществуващите дни не се пипат. |
+| PUT | `/schedule/:date` | `{ dayOff?, slots? \| from+to(+step), note? }` |
+| PATCH | `/schedule/:date/slots` | `{ time, open }`: отваря или затваря един час |
 
-```username``` : [string] -- The username of the person is required and must be unique, also there is a minimum length of 5 chars, allowed are latin letters and numbers;
-
-```password``` : [string] -- The password of the person is required and must be unique, also there is a minimum length of 5 chars, allowed are latin letters and numbers;
-
-Not Required
-
-```tel``` : [string] -- Optional;
-
-### Success Response:
-
-Code: 200
-
-Content: 
-``` 
-{
-    "_id": "5f1875690916010017964978",
-    "name": "John Doe",
-    "email": "john@email.com",
-    "username": "Johny",
-    "created_at": "2020-10-14T08:04:12.196Z",
-    "updatedAt": "2020-10-14T08:58:53.589Z"
-}
-```
-
-### Error Response:
-
-Code: 409 CONFLICT
-
-Content: 
-```
-{
-    "message": "This email/username is already registered!"
-}
-```
-
-## Login User
-Signs in user and returns the registered data as json.
-
-### URL --> ```/users/login```
-
-### Method --> ```POST```
-
-### Body -->
-
-```
-{
-    "username":"Johny",
-    "password":"12345"
-}
-```
-
-Required:
-
-```username``` : [string] -- The username of the person 
-
-```password``` : [string] -- The password of the person 
-
-### Success Response:
-
-Code: 200
-
-Content: 
-``` 
-{
-    "_id": "5f1875690916010017964978",
-    "name": "John Doe",
-    "email": "john@email.com",
-    "username": "Johny",
-    "created_at": "2020-10-14T08:04:12.196Z",
-    "updatedAt": "2020-10-14T08:58:53.589Z"
-}
-```
-
-### Error Response:
-
-Code: 401 Unauthorized
-
-Content: 
-```
-{ 
-    "message": "Wrong username or password"
-}
-```
-
-## Logout User
-Logout user.
-
-### URL --> ```/users/logout```
-
-### Method --> ```POST```
-
-### Success Response:
-
-Code: 401 Unauthorized
-
-Content: 
-``` 
-{ 
-    "message": "Logged out!"
-}
-```
-
-<!-- users
-.post /register - register new user
-.post /login - login user
-.post /logout - logout user
-
-.get /profile - get user info
-.post /profile - post user info
-.put /profile - edit user info -->
-
-
-<!-- http://localhost:3000/api/users/register --  {"name":"SomeName","email":"some@email.com","username":"someUsername","password":"12345","rePassword":"12345"} -->
+Ако промяна в графика би махнала час, в който има записан клиент, сървърът връща **409** и списък с часовете. Първо се отменя записването, после се сменя графикът.

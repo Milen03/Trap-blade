@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 const { PHONE_REGEX } = require('../utils/validators');
-const saltRounds = Number(process.env.SALTROUNDS) || 5;
+const saltRounds = Number(process.env.SALTROUNDS) || 10;
 
 const userSchema = new mongoose.Schema({
     email: {
@@ -43,6 +43,27 @@ const userSchema = new mongoose.Schema({
             message: 'Невалидна роля',
         },
         default: 'client',
+    },
+    // Само за бръснарите (barber/owner) — показва се на сайта в секция "Екипът".
+    // Попълва се от scripts/seed.js.
+    title: {
+        type: String,
+        trim: true,
+        maxlength: [50, 'Титлата е твърде дълга'],
+    },
+    isLead: {
+        type: Boolean,
+        default: false,
+    },
+    // Услугите на бръснаря с неговите цени (в евро). id е кратък ключ: "hair", "beard"...
+    services: {
+        type: [{
+            _id: false,
+            id: { type: String, required: true, trim: true },
+            name: { type: String, required: true, trim: true },
+            price: { type: Number, required: true, min: [0, 'Цената не може да е отрицателна'] },
+        }],
+        default: undefined,
     },
     // "Забравена парола": хеш на кода от линка в писмото и до кога е валиден.
     // Пазим само хеша (SHA-256) — ако някой види базата, от него не може да направи работещ линк.

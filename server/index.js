@@ -6,13 +6,15 @@ const apiRouter = require('./router');
 const cors = require('cors');
 // const config = require('./config/config');
 const { errorHandler } = require('./utils');
-const { userModel } = require('./models');
+const { userModel, appointmentModel } = require('./models');
 
 dbConnector()
   // Привеждаме индексите на колекцията users в синхрон със схемата.
   // Старият модел имаше уникално поле username; ако индексът му остане в базата,
   // всеки нов потребител без username ще дава грешка "вече съществува".
   .then(() => userModel.syncIndexes())
+  // Индексът срещу двойно записване трябва да е готов, преди да приемаме заявки.
+  .then(() => appointmentModel.init())
   .then(() => {
     const config = require('./config/config');
 

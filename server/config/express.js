@@ -1,7 +1,8 @@
 const express = require('express');
 const path = require('path');
 const cookieParser = require('cookie-parser');
-const cookieSecret = process.env.COOKIESECRET || 'SoftUni';
+const { readSecret } = require('../utils/secrets');
+const cookieSecret = readSecret('COOKIESECRET');
 // const { errorHandler } = require('../utils')
 
 module.exports = (app) => {

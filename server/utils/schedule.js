@@ -116,6 +116,41 @@ function monthsFromNow(month) {
     return Math.round(target.diff(current, 'months').months);
 }
 
+// Сегашният час в София: "14:05".
+function nowTime() {
+    return DateTime.now().setZone(ZONE).toFormat('HH:mm');
+}
+
+// Моментът (DateTime в София), в който започва даден час от даден ден.
+function toDateTime(date, time) {
+    return DateTime.fromFormat(`${date} ${time}`, 'yyyy-MM-dd HH:mm', { zone: ZONE });
+}
+
+// ---------- Граници за графика и записванията ----------
+
+// Докъде напред може да се прави график (и да се записват часове).
+const MAX_MONTHS_AHEAD = 12;
+
+// Месецът не е минал и не е твърде напред.
+function checkMonthRange(month) {
+    const diff = monthsFromNow(month);
+    if (diff < 0) {
+        throw httpError(400, 'Не може да правиш график за минал месец');
+    }
+    if (diff > MAX_MONTHS_AHEAD) {
+        throw httpError(400, `Графикът може да е най-много ${MAX_MONTHS_AHEAD} месеца напред`);
+    }
+}
+
+// Ден, който може да се променя: валидна дата, не е минала и не е твърде напред.
+function checkEditableDate(date) {
+    assertDate(date);
+    if (date < today()) {
+        throw httpError(400, 'Не може да променяш минал ден');
+    }
+    checkMonthRange(date.slice(0, 7));
+}
+
 module.exports = {
     ZONE,
     isValidTime,
@@ -129,5 +164,10 @@ module.exports = {
     monthBounds,
     dayOfWeek,
     today,
+    nowTime,
+    toDateTime,
     monthsFromNow,
+    MAX_MONTHS_AHEAD,
+    checkMonthRange,
+    checkEditableDate,
 }

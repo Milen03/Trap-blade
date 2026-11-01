@@ -2,7 +2,7 @@
 // Пускане: npm run seed  (от папка server/)
 //
 // Данните са в .env: SEED_OWNER_*, SEED_BARBER1_*, SEED_BARBER2_* (виж .env.example).
-// - Ако имейлът вече е регистриран -> само му слагаме ролята (паролата и името остават).
+// - Ако имейлът вече е регистриран -> слагаме му ролята, титлата и услугите (паролата и името остават).
 // - Ако го няма -> създаваме профил с паролата от .env.
 // - Профил с празен ..._EMAIL се прескача (например ако бръснарите още нямат имейли).
 const path = require('path');
@@ -17,17 +17,55 @@ const mongoose = require('mongoose');
 const dbConnector = require('../config/db');
 const { userModel } = require('../models');
 
+// Услугите (id -> име). Цените са в евро и са различни за всеки бръснар.
+const SERVICE_NAMES = {
+    hair: 'Коса',
+    'hair-beard': 'Коса + брада',
+    beard: 'Брада',
+    kids: 'Детско',
+};
+
+const priceList = (prices) =>
+    Object.entries(prices).map(([id, price]) => ({ id, name: SERVICE_NAMES[id], price }));
+
 const ACCOUNTS = [
-    { prefix: 'SEED_OWNER', role: 'owner', firstName: 'Собственик', lastName: 'TrapBlade' },
-    { prefix: 'SEED_BARBER1', role: 'barber', firstName: 'Бръснар', lastName: 'Първи' },
-    { prefix: 'SEED_BARBER2', role: 'barber', firstName: 'Бръснар', lastName: 'Втори' },
+    {
+        prefix: 'SEED_OWNER',
+        role: 'owner',
+        firstName: 'Боян',
+        lastName: 'Попов',
+        title: 'Главен бръснар',
+        isLead: true,
+        services: priceList({ hair: 15, 'hair-beard': 20, beard: 12, kids: 12 }),
+    },
+    {
+        prefix: 'SEED_BARBER1',
+        role: 'barber',
+        firstName: 'Иван',
+        lastName: 'Мешеков',
+        title: 'Бръснар',
+        isLead: false,
+        services: priceList({ hair: 10, 'hair-beard': 14, beard: 7, kids: 8 }),
+    },
+    {
+        prefix: 'SEED_BARBER2',
+        role: 'barber',
+        firstName: 'Павлин',
+        lastName: 'Пенчев',
+        title: 'Бръснар',
+        isLead: false,
+        services: priceList({ hair: 10, 'hair-beard': 14, beard: 7, kids: 8 }),
+    },
 ];
 
-function readAccount({ prefix, role, firstName, lastName }) {
+function readAccount({ prefix, role, firstName, lastName, title, isLead, services }) {
     const env = (name) => (process.env[`${prefix}_${name}`] || '').trim();
     return {
         prefix,
         role,
+        title,
+        isLead,
+        services,
         email: env('EMAIL').toLowerCase(),
         password: process.env[`${prefix}_PASSWORD`] || '',
         firstName: env('FIRST_NAME') || firstName,
@@ -36,13 +74,14 @@ function readAccount({ prefix, role, firstName, lastName }) {
 }
 
 async function seedAccount(account) {
-    const { prefix, role, email, password, firstName, lastName } = account;
+    const { prefix, role, email, password, firstName, lastName, title, isLead, services } = account;
+    const barberProfile = { role, title, isLead, services };
     const existing = await userModel.findOne({ email });
 
     if (existing) {
         // updateOne, за да не пускаме валидацията на целия профил и да не пипаме паролата.
-        await userModel.updateOne({ _id: existing._id }, { role });
-        console.log(`✔ ${email} вече съществува — ролята е ${role}`);
+        await userModel.updateOne({ _id: existing._id }, barberProfile);
+        console.log(`✔ ${email} вече съществува — ролята е ${role}, услугите са обновени`);
         return;
     }
 
@@ -51,7 +90,7 @@ async function seedAccount(account) {
     }
 
     // Паролата се хешира автоматично в userModel (pre 'save').
-    await userModel.create({ email, password, firstName, lastName, role });
+    await userModel.create({ email, password, firstName, lastName, ...barberProfile });
     console.log(`+ Създаден ${role}: ${email}`);
 }
 
