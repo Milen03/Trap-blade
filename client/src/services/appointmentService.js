@@ -21,3 +21,14 @@ export function createManual(data) {
 export function cancel(id) {
   return api.patch(`/appointments/${id}/cancel`)
 }
+
+// Клиентът си записва час. Потвърждава се веднага — без одобрение от бръснаря.
+// data: { barberId, date, time, serviceId }
+export function create(data) {
+  return api.post('/appointments', data)
+}
+
+// Всички часове на логнатия потребител (подредени по дата и час).
+export function listMine() {
+  return api.get('/appointments/mine')
+}

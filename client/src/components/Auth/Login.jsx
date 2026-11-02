@@ -48,7 +48,7 @@ function Login() {
       footer={
         <p className="flex items-center gap-3">
           Нямаш профил?
-          <Link to="/register" className="font-brand text-3xl text-ice hover:text-white">
+          <Link to="/register" state={location.state} className="font-brand text-3xl text-ice hover:text-white">
             Register
           </Link>
         </p>

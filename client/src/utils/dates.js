@@ -73,3 +73,20 @@ export function calendarGrid(month) {
 }
 
 export const WEEKDAYS_SHORT = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд']
+
+// Колко часа остават до даден час от даден ден (в София). Отрицателно, ако е минал.
+export function hoursUntil(date, time) {
+  const [y, mo, d] = date.split('-').map(Number)
+  const [h, mi] = time.split(':').map(Number)
+  const [ny, nmo, nd] = todayInSofia().split('-').map(Number)
+  const [nh, nmi] = nowTimeInSofia().split(':').map(Number)
+  // Сравняваме "стенни" часове в София, затова и двете страни са в UTC без отместване.
+  const target = Date.UTC(y, mo - 1, d, h, mi)
+  const now = Date.UTC(ny, nmo - 1, nd, nh, nmi)
+  return (target - now) / 3600000
+}
+
+// "четвъртък, 5 ноември" -> "Четвъртък, 5 ноември"
+export function capitalize(text) {
+  return text.charAt(0).toUpperCase() + text.slice(1)
+}

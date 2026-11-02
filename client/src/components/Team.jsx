@@ -1,5 +1,25 @@
-import { useState } from 'react'
-import { TEAM } from '../data/studio.js'
+import { useEffect, useState } from 'react'
+import { STUDIO, TEAM } from '../data/studio.js'
+import { useAuth } from '../hooks/useAuth.js'
+import { getBarbers } from '../services/barberService.js'
+import { readPendingBooking } from '../utils/pendingBooking.js'
+import BookingDialog from './Booking/BookingDialog.jsx'
+
+// Статичният екип от studio.js — показва се, докато зареждаме бръснарите от сървъра
+// или ако сървърът не отговаря (тогава онлайн записването е изключено).
+const FALLBACK_TEAM = TEAM.map((barber) => ({ ...barber, code: barber.id }))
+
+// Бръснар от API-то (GET /api/barbers) -> във вида, който ползва картата.
+function toCard(barber, index) {
+  return {
+    id: barber._id,
+    code: `TB-${String(index + 1).padStart(3, '0')}`,
+    role: barber.title || 'Бръснар',
+    name: `${barber.firstName} ${barber.lastName}`.trim(),
+    lead: barber.isLead,
+    services: barber.services || [],
+  }
+}
 
 // Faint horizontal lines behind the card header.
 const STRIPES = {
@@ -18,7 +38,7 @@ function RadioDot({ checked }) {
   )
 }
 
-function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectService }) {
+function BarberCard({ barber, selected, serviceId, canBook, onSelectBarber, onSelectService, onBook }) {
   const chosen = selected ? barber.services.find((s) => s.id === serviceId) : null
 
   return (
@@ -29,7 +49,7 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
       {/* Header: id, badges, barber toggle, name */}
       <div className="border-b border-line px-6 pb-4 pt-6" style={STRIPES}>
         <div className="flex items-center gap-3">
-          <span className="bg-white px-2.5 py-1 text-xs font-semibold tracking-[0.2em] text-ink">{barber.id}</span>
+          <span className="bg-white px-2.5 py-1 text-xs font-semibold tracking-[0.2em] text-ink">{barber.code}</span>
           {barber.lead && (
             <span className="border border-ice px-2.5 py-0.5 text-xs font-semibold uppercase tracking-[0.2em] text-ice">
               Главен
@@ -116,16 +136,17 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
             )}
           </div>
 
-          {/* Front-end only for now: the booking request is not sent anywhere yet. */}
+          {/* Първото натискане избира бръснаря; после (с избрана услуга) отваря записването. */}
           <button
             type="button"
-            onClick={() => onSelectBarber(barber.id)}
-            className={`mt-5 flex w-full items-center justify-center gap-3 border-2 py-4 text-sm font-bold uppercase tracking-[0.3em] transition-colors ${selected
-                ? 'border-ice bg-ice text-ink hover:bg-white hover:border-white'
+            onClick={() => (selected ? onBook(barber, chosen) : onSelectBarber(barber.id))}
+            disabled={selected && (!chosen || !canBook)}
+            className={`mt-5 flex w-full items-center justify-center gap-3 border-2 py-4 text-sm font-bold uppercase tracking-[0.3em] transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${selected
+                ? 'border-ice bg-ice text-ink enabled:hover:bg-white enabled:hover:border-white'
                 : 'border-white/25 bg-transparent text-white hover:border-ice hover:text-ice'
               }`}
           >
-            Запиши час
+            {selected && !chosen ? 'Избери услуга' : 'Запиши час'}
             <span aria-hidden="true">→</span>
           </button>
         </div>
@@ -135,13 +156,56 @@ function BarberCard({ barber, selected, serviceId, onSelectBarber, onSelectServi
 }
 
 function Team() {
-  // Only one barber can be selected at a time; picking another clears the previous choice.
-  const [selection, setSelection] = useState({ barberId: TEAM[0].id, serviceId: TEAM[0].services[0].id })
+  const { user, isLoading: authLoading } = useAuth()
+  // Бръснарите от сървъра: loading -> ok | error.
+  const [team, setTeam] = useState({ status: 'loading', list: FALLBACK_TEAM })
+  // Изборът на потребителя. Докато не е избрал нищо, е избран първият бръснар и първата му услуга.
+  const [selection, setSelection] = useState(null)
+  // Отвореният диалог за записване: { barber, service, initial? }.
+  const [booking, setBooking] = useState(null)
+  // Изборът на гост, който е отишъл да влезе (виж BookingDialog.jsx) — отваряме го наново след входа.
+  const [pending, setPending] = useState(readPendingBooking)
+
+  useEffect(() => {
+    let ignore = false
+    getBarbers()
+      .then((barbers) => {
+        if (!ignore && barbers.length) setTeam({ status: 'ok', list: barbers.map(toCard) })
+        else if (!ignore) setTeam({ status: 'error', list: FALLBACK_TEAM })
+      })
+      .catch(() => {
+        if (!ignore) setTeam({ status: 'error', list: FALLBACK_TEAM })
+      })
+    return () => {
+      ignore = true
+    }
+  }, [])
+
+  const canBook = team.status === 'ok'
+  const first = team.list[0]
+  const current =
+    selection && team.list.some((b) => b.id === selection.barberId)
+      ? selection
+      : { barberId: first.id, serviceId: first.services[0]?.id ?? null }
 
   const selectBarber = (barberId) =>
-    setSelection((prev) => (prev.barberId === barberId ? prev : { barberId, serviceId: null }))
+    setSelection((prev) => (prev?.barberId === barberId ? prev : { barberId, serviceId: null }))
 
   const selectService = (barberId, serviceId) => setSelection({ barberId, serviceId })
+
+  // След вход: ако госта го чака избран час, отваряме диалога направо на потвърждението.
+  let restored = null
+  if (!booking && pending && canBook && user && !authLoading) {
+    const barber = team.list.find((b) => b.id === pending.barberId)
+    const service = barber?.services.find((s) => s.id === pending.serviceId)
+    if (barber && service) restored = { barber, service, initial: { date: pending.date, time: pending.time } }
+  }
+  const activeBooking = booking || restored
+
+  const closeBooking = () => {
+    setBooking(null)
+    setPending(null)
+  }
 
   return (
     <section id="team" className="scroll-mt-16 bg-ink py-20 sm:py-24">
@@ -156,18 +220,39 @@ function Team() {
         </div>
 
         <div className="grid gap-6 md:grid-cols-3">
-          {TEAM.map((barber) => (
+          {team.list.map((barber) => (
             <BarberCard
               key={barber.id}
               barber={barber}
-              selected={selection.barberId === barber.id}
-              serviceId={selection.serviceId}
+              selected={current.barberId === barber.id}
+              serviceId={current.serviceId}
+              canBook={canBook}
               onSelectBarber={selectBarber}
               onSelectService={selectService}
+              onBook={(b, service) => setBooking({ barber: b, service })}
             />
           ))}
         </div>
+
+        {team.status === 'error' && (
+          <p role="status" className="mt-6 border border-line bg-coal px-4 py-3 text-white/70">
+            Онлайн записването временно не работи — обади се на{' '}
+            <a href={STUDIO.phoneHref} className="font-bold text-ice hover:text-white">
+              {STUDIO.phone}
+            </a>
+            .
+          </p>
+        )}
       </div>
+
+      {activeBooking && (
+        <BookingDialog
+          barber={activeBooking.barber}
+          service={activeBooking.service}
+          initial={activeBooking.initial}
+          onClose={closeBooking}
+        />
+      )}
     </section>
   )
 }
