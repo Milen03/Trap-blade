@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 import { MIN_PASSWORD_LENGTH, validateProfile } from '../../utils/validation.js'
 import AuthLayout from './AuthLayout.jsx'
 import AuthField from './AuthField.jsx'
 import FormError from './FormError.jsx'
+import { homePath } from '../../utils/roles.js'
 
 const INITIAL_VALUES = {
   firstName: '',
@@ -29,6 +30,7 @@ function validate(values) {
 function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [values, setValues] = useState(INITIAL_VALUES)
   const [error, setError] = useState('')
@@ -56,8 +58,9 @@ function Register() {
       // Пращаме всичко без "terms" — отметката е само за формата.
       const { firstName, lastName, email, phone, password, rePassword } = values
       // Сървърът създава профила и веднага те логва (слага бисквитката с токена).
-      await register({ firstName, lastName, email, phone, password, rePassword })
-      navigate('/')
+      const user = await register({ firstName, lastName, email, phone, password, rePassword })
+      // Ако е дошъл от записване на час или от защитена страница — връщаме го там.
+      navigate(location.state?.from || homePath(user), { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -73,7 +76,7 @@ function Register() {
       footer={
         <p className="flex items-center gap-3">
           Вече имаш профил?
-          <Link to="/login" className="font-brand text-3xl text-ice hover:text-white">
+          <Link to="/login" state={location.state} className="font-brand text-3xl text-ice hover:text-white">
             Login
           </Link>
         </p>
