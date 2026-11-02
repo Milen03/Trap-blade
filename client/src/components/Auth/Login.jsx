@@ -1,13 +1,15 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth.js'
 import AuthLayout from './AuthLayout.jsx'
 import AuthField from './AuthField.jsx'
 import FormError from './FormError.jsx'
+import { homePath } from '../../utils/roles.js'
 
 function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   // "Контролирана" форма: стойностите на полетата живеят в state.
   const [values, setValues] = useState({ email: '', password: '' })
@@ -28,8 +30,10 @@ function Login() {
     try {
       // Сървърът проверява имейла и паролата и при успех слага бисквитката с токена.
       // Оставаш логнат, докато не натиснеш "Изход".
-      await login(values.email, values.password)
-      navigate('/')
+      const user = await login(values.email, values.password)
+      // Ако е дошъл от защитена страница (виж RequireRole.jsx) — връщаме го там.
+      // Иначе бръснарите отиват в панела си, а клиентите — на началната страница.
+      navigate(location.state?.from || homePath(user), { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {

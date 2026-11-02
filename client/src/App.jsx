@@ -5,6 +5,9 @@ import Register from './components/Auth/Register.jsx'
 import ForgotPassword from './components/Auth/ForgotPassword.jsx'
 import ResetPassword from './components/Auth/ResetPassword.jsx'
 import GuestOnly from './components/Auth/GuestOnly.jsx'
+import RequireRole from './components/Auth/RequireRole.jsx'
+import Panel from './pages/Panel.jsx'
+import { STAFF_ROLES } from './utils/roles.js'
 
 function App() {
   return (
@@ -18,6 +21,11 @@ function App() {
         {/* Забравена парола: искане на линк и страницата от линка в писмото. */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+      </Route>
+
+      {/* Панел за бръснарите и собственика. */}
+      <Route element={<RequireRole roles={STAFF_ROLES} />}>
+        <Route path="/panel" element={<Panel />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
