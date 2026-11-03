@@ -4,6 +4,8 @@ Express + MongoDB (mongoose) бекенд за записване на часо�
 
 ## Пускане
 
+Нужен е **Node 18 или по-нов** (`node -v`).
+
 Създай `server/.env` (не се качва в git) с поне `SECRET` и `COOKIESECRET` (дълги случайни низове),
 `DB_URL` (по подразбиране `mongodb://localhost:27017/trapblade`) и `SEED_OWNER_*`, `SEED_BARBER1_*`,
 `SEED_BARBER2_*` (`_EMAIL`, `_PASSWORD`) за акаунтите на бръснарите.
@@ -12,8 +14,16 @@ Express + MongoDB (mongoose) бекенд за записване на часо�
 npm install
 npm run seed           # създава собственика и бръснарите (роли, титли, услуги и цени)
 npm start              # http://localhost:3000/api
-npm test               # unit тестове (node --test)
+npm test               # всички тестове (unit + API с временна база)
+npm run test:unit      # само бързите тестове без база
 ```
+
+### Тестове
+- `tests/unit/` — чисти функции (часове, дати, свободни слотове).
+- `tests/api/` — целият път през API-то срещу **временна MongoDB** (`mongodb-memory-server`):
+  вход и права, графикът, записване (включително двама клиенти едновременно за един час),
+  отмяна и ръчно вписване. Базата се пуска само за тестовете и се трие след тях — твоите данни не се пипат.
+  Първото пускане сваля MongoDB (~100 MB) и я кешира.
 
 В production (`NODE_ENV=production`) сървърът не тръгва без `SECRET` и `COOKIESECRET`.
 

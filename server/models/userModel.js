@@ -92,23 +92,10 @@ userSchema.methods = {
 
 // Преди запис: ако паролата е нова/сменена, я хешираме с bcrypt.
 // В базата никога не пазим паролата в чист вид.
-userSchema.pre('save', function (next) {
+userSchema.pre('save', async function () {
     if (this.isModified('password')) {
-        bcrypt.genSalt(saltRounds, (err, salt) => {
-            if (err) {
-                return next(err);
-            }
-            bcrypt.hash(this.password, salt, (err, hash) => {
-                if (err) {
-                    return next(err);
-                }
-                this.password = hash;
-                next();
-            })
-        })
-        return;
+        this.password = await bcrypt.hash(this.password, saltRounds);
     }
-    next();
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -23,7 +23,7 @@ function hasStarted(date, time) {
 
 // Връща записването с имената на бръснаря (за отговорите към клиента).
 function withBarber(appointment) {
-    return appointment.populate('barber', BARBER_FIELDS).execPopulate();
+    return appointment.populate('barber', BARBER_FIELDS);
 }
 
 // Филтър по дата: ?date=YYYY-MM-DD или ?month=YYYY-MM (точно едно от двете).
