@@ -15,37 +15,8 @@ export const STUDIO = {
 }
 
 export const NAV_LINKS = [
-  { label: 'Услуги', href: '#services' },
   { label: 'Екипът', href: '#team' },
   { label: 'Контакт', href: '#contact' },
-]
-
-// Price and duration are placeholders until the studio confirms them.
-export const SERVICES = [
-  {
-    id: 'buzz-cut',
-    name: 'Buzz Cut',
-    text: 'Машинка на една дължина. Чисто, остро, без излишни приказки.',
-
-  },
-  {
-    id: 'fade',
-    name: 'Fade',
-    text: 'Плавен преход от кожа до коса. Ниско, средно или високо — ти казваш.',
-   
-  },
-  {
-    id: 'crop',
-    name: 'Crop',
-    text: 'Текстуриран връх с къси страни. Модерна класика за всеки ден.',
-   
-  },
-  {
-    id: 'design',
-    name: 'Design',
-    text: 'Линии и шарки с бръснач. Подпис, който се вижда отдалеч.',
-   
-  },
 ]
 
 export const MARQUEE_WORDS = ['Crop', 'Design', 'Beard', 'Buzz Cut', 'Fade']
@@ -81,10 +52,4 @@ export const TEAM = [
     name: 'Павлин Пенчев',
     services: priceList({ hair: 10, 'hair-beard': 14, beard: 7, kids: 8 }),
   },
-]
-
-export const BOOKING_STEPS = [
-  { title: 'Избери бръснар', text: 'Главният или някой от екипа' },
-  { title: 'Ден и час', text: 'Свободните часове се виждат веднага' },
-  { title: 'Имена и телефон', text: 'Потвърждаваш и си готов' },
 ]

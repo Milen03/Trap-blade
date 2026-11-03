@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const { freeSlots, freeDays } = require('../utils/availability');
+const { freeSlots, freeDays } = require('../../utils/availability');
 
 const NOW = { date: '2026-11-05', time: '12:10' };
 const day = (date, slots, dayOff = false) => ({ date, slots, dayOff });

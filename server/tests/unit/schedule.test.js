@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const schedule = require('../utils/schedule');
+const schedule = require('../../utils/schedule');
 
 test('buildTimes: от 10:00 до 21:00 през 30 мин — последният час свършва до 21:00', () => {
     const times = schedule.buildTimes('10:00', '21:00', 30);

@@ -1,35 +1,20 @@
 global.__basedir = __dirname;
-require('dotenv').config()
+require('dotenv').config();
+
 const dbConnector = require('./config/db');
-// const mongoose = require('mongoose');
-const apiRouter = require('./router');
-const cors = require('cors');
-// const config = require('./config/config');
-const { errorHandler } = require('./utils');
-const { userModel, appointmentModel } = require('./models');
+const { initIndexes } = require('./models');
 
 dbConnector()
-  // Привеждаме индексите на колекцията users в синхрон със схемата.
-  // Старият модел имаше уникално поле username; ако индексът му остане в базата,
-  // всеки нов потребител без username ще дава грешка "вече съществува".
-  .then(() => userModel.syncIndexes())
-  // Индексът срещу двойно записване трябва да е готов, преди да приемаме заявки.
-  .then(() => appointmentModel.init())
-  .then(() => {
-    const config = require('./config/config');
+    // Индексите (включително този срещу двойно записване) трябва да са готови, преди да приемаме заявки.
+    .then(() => initIndexes())
+    .then(() => {
+        // config и app се зареждат след dotenv, защото четат променливите от .env.
+        const config = require('./config/config');
+        const createApp = require('./app');
 
-    const app = require('express')();
-    require('./config/express')(app);
-
-    app.use(cors({
-      origin: config.origin,
-      credentials: true
-    }));
-
-    app.use('/api', apiRouter);
-
-    app.use(errorHandler);
-
-    app.listen(config.port, console.log(`Listening on port ${config.port}!`));
-  })
-  .catch(console.error);
+        createApp().listen(config.port, () => console.log(`Listening on port ${config.port}!`));
+    })
+    .catch((err) => {
+        console.error(err);
+        process.exitCode = 1;
+    });
