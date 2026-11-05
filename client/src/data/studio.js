@@ -7,6 +7,7 @@ export const STUDIO = {
   address: 'ул. Ниш 1Б',
   city: 'Велико Търново',
   mapUrl: 'https://www.google.com/maps/search/?api=1&query=%D1%83%D0%BB.+%D0%9D%D0%B8%D1%88+1%D0%91%2C+%D0%92%D0%B5%D0%BB%D0%B8%D0%BA%D0%BE+%D0%A2%D1%8A%D1%80%D0%BD%D0%BE%D0%B2%D0%BE',
+  // Ако смениш работното време или телефона, смени ги и в index.html (данните за Google).
   hours: [
     { days: 'Пон – Пет', time: '10:00 - 19:30' },
     { days: 'Събота', time: '10:00 - 19:30' },

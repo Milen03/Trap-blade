@@ -5,8 +5,61 @@
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TrapBlade Studio · Бръснарница Велико Търново</title>
-    <meta name="description" content="TrapBlade Studio — бръснарница във Велико Търново. Fade, crop, buzz cut и дизайн с бръснач." />
+    <meta
+      name="description"
+      content="TrapBlade Studio — бръснарница във Велико Търново, ул. Ниш 1Б. Fade, crop, buzz cut, брада и дизайн с бръснач. Запази час онлайн за под минута."
+    />
     <meta name="theme-color" content="#0a0a0a" />
+
+    <!-- Google брои само основния адрес (а не trap-blade.vercel.app или trapblade.com без www). -->
+    <link rel="canonical" href="https://www.trapblade.com/" />
+
+    <!-- Как изглежда линкът, когато го споделиш във Viber, Facebook, Instagram, Messenger... -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="TrapBlade Studio" />
+    <meta property="og:locale" content="bg_BG" />
+    <meta property="og:url" content="https://www.trapblade.com/" />
+    <meta property="og:title" content="TrapBlade Studio · Бръснарница Велико Търново" />
+    <meta property="og:description" content="Fade, crop, buzz cut и брада. Избери бръснар, ден и час — записваш се онлайн за под минута." />
+    <meta property="og:image" content="https://www.trapblade.com/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="TrapBlade Studio — бръснарница във Велико Търново" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!--
+      Данни за бръснарницата за Google (адрес, телефон, работно време, Instagram).
+      ВАЖНО: ако смениш работното време или телефона, смени ги и в src/data/studio.js (футъра).
+    -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "HairSalon",
+        "name": "TrapBlade Studio",
+        "description": "Бръснарница във Велико Търново. Fade, crop, buzz cut, брада и дизайн с бръснач. Онлайн записване на час.",
+        "url": "https://www.trapblade.com/",
+        "image": "https://www.trapblade.com/og-image.jpg",
+        "logo": "https://www.trapblade.com/favicon.png",
+        "telephone": "+359896754554",
+        "priceRange": "€",
+        "currenciesAccepted": "EUR",
+        "address": {
+          "@type": "PostalAddress",
+          "streetAddress": "ул. Ниш 1Б",
+          "addressLocality": "Велико Търново",
+          "addressCountry": "BG"
+        },
+        "openingHoursSpecification": [
+          {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
+            "opens": "10:00",
+            "closes": "19:30"
+          }
+        ],
+        "sameAs": ["https://www.instagram.com/trappblade_studio/"]
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>
