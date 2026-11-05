@@ -157,11 +157,26 @@ function Register() {
             className="mt-0.5 h-5 w-5 shrink-0 accent-ice"
           />
           <span>
+            {/* Отварят се в нов раздел, за да не се загуби попълнената форма. */}
             Съгласен съм с{' '}
-            <a href="#" className="font-semibold text-white underline underline-offset-4 hover:text-ice">
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-white underline underline-offset-4 hover:text-ice"
+            >
               общите условия
             </a>{' '}
-            и с обработката на данните ми за записване на часове.
+            и с обработката на данните ми за записване на часове според{' '}
+            <a
+              href="/privacy"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-white underline underline-offset-4 hover:text-ice"
+            >
+              политиката за поверителност
+            </a>
+            .
           </span>
         </label>
 
