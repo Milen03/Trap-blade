@@ -8,12 +8,17 @@ import GuestOnly from './components/Auth/GuestOnly.jsx'
 import RequireRole from './components/Auth/RequireRole.jsx'
 import Panel from './pages/Panel.jsx'
 import MyAppointments from './pages/MyAppointments.jsx'
+import Terms from './pages/Terms.jsx'
+import Privacy from './pages/Privacy.jsx'
 import { STAFF_ROLES } from './utils/roles.js'
 
 function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
+      {/* Общи условия и поверителност — публични. */}
+      <Route path="/terms" element={<Terms />} />
+      <Route path="/privacy" element={<Privacy />} />
 
       {/* Вход, регистрация и забравена парола — само за нелогнати. */}
       <Route element={<GuestOnly />}>
