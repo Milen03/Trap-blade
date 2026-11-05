@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { LEGAL } from '../../data/studio.js'
+
+// Кога за последно са променяни условията и политиката — смени датата, когато промениш текста.
+const LAST_UPDATED = '5 ноември 2026'
 
 // Общ шаблон за "Общи условия" и "Поверителност".
 export function LegalSection({ title, children }) {
@@ -38,7 +40,7 @@ function LegalLayout({ title, children }) {
 
         <main className="pb-16 pt-14 sm:pt-16">
           <h1 className="text-5xl font-bold uppercase leading-none sm:text-6xl">{title}</h1>
-          <p className="mt-4 text-sm uppercase tracking-[0.2em] text-white/50">Последна промяна: {LEGAL.updated}</p>
+          <p className="mt-4 text-sm uppercase tracking-[0.2em] text-white/50">Последна промяна: {LAST_UPDATED}</p>
 
           {children}
 

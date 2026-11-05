@@ -1,18 +1,20 @@
 import { Link } from 'react-router-dom'
 import LegalLayout, { LegalSection } from '../components/Legal/LegalLayout.jsx'
-import { LEGAL, STUDIO } from '../data/studio.js'
+import { STUDIO } from '../data/studio.js'
 
 // Политика за поверителност. Описва точно какво прави сайтът днес
 // (какви данни пазим, бисквитката за вход, доставчиците). Ако добавиш нови функции
 // (например писма за напомняне или анализи), обнови и тази страница.
-// Текстът е чернова — прегледай го (по възможност с юрист) и попълни LEGAL в src/data/studio.js.
+// Текстът е чернова — прегледай го (по възможност с юрист).
 function Privacy() {
   return (
     <LegalLayout title="Поверителност">
       <LegalSection title="1. Администратор на данните">
         <p>
-          {LEGAL.company}, ЕИК {LEGAL.eik} („TrapBlade Studio“), {STUDIO.address}, {STUDIO.city}. За въпроси за личните
-          ти данни: имейл {LEGAL.email} или телефон <a href={STUDIO.phoneHref}>{STUDIO.phone}</a>.
+          TrapBlade Studio, {STUDIO.address}, {STUDIO.city}. За въпроси за личните ти данни: телефон{' '}
+          <a href={STUDIO.phoneHref}>{STUDIO.phone}</a> или съобщение в <a href={STUDIO.instagramUrl} target="_blank" rel="noreferrer">
+            Instagram
+          </a>.
         </p>
       </LegalSection>
 
@@ -94,7 +96,9 @@ function Privacy() {
           <li>да ги получиш в машинночетим вид (преносимост).</li>
         </ul>
         <p>
-          Пиши ни на {LEGAL.email} или се обади на <a href={STUDIO.phoneHref}>{STUDIO.phone}</a>. Отговаряме до 30 дни.
+          Обади се на <a href={STUDIO.phoneHref}>{STUDIO.phone}</a> или ни пиши в <a href={STUDIO.instagramUrl} target="_blank" rel="noreferrer">
+            Instagram
+          </a>. Отговаряме до 30 дни.
           Можеш да подадеш жалба и до Комисията за защита на личните данни (
           <a href="https://www.cpdp.bg" target="_blank" rel="noreferrer">
             cpdp.bg

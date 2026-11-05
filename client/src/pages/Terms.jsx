@@ -1,17 +1,19 @@
 import { Link } from 'react-router-dom'
 import LegalLayout, { LegalSection } from '../components/Legal/LegalLayout.jsx'
-import { LEGAL, STUDIO } from '../data/studio.js'
+import { STUDIO } from '../data/studio.js'
 
 // Общи условия за ползване на сайта и онлайн записването.
-// Текстът е чернова — прегледай го (по възможност с юрист) и попълни LEGAL в src/data/studio.js.
+// Текстът е чернова — прегледай го (по възможност с юрист).
 function Terms() {
   return (
     <LegalLayout title="Общи условия">
       <LegalSection title="1. Кои сме ние">
         <p>
-          Сайтът <strong>www.trapblade.com</strong> се поддържа от {LEGAL.company}, ЕИК {LEGAL.eik} („TrapBlade
-          Studio“, „ние“), с адрес на обекта {STUDIO.address}, {STUDIO.city}. Връзка с нас: телефон{' '}
-          <a href={STUDIO.phoneHref}>{STUDIO.phone}</a>, имейл {LEGAL.email}.
+          Сайтът <strong>www.trapblade.com</strong> се поддържа от TrapBlade Studio („ние“), бръснарница на адрес{' '}
+          {STUDIO.address}, {STUDIO.city}. Връзка с нас: телефон <a href={STUDIO.phoneHref}>{STUDIO.phone}</a> или
+          съобщение в <a href={STUDIO.instagramUrl} target="_blank" rel="noreferrer">
+            Instagram
+          </a>.
         </p>
         <p>
           С регистрацията и ползването на сайта приемаш тези условия. Ако не си съгласен, не създавай профил и не

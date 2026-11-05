@@ -54,12 +54,3 @@ export const TEAM = [
     services: priceList({ hair: 10, 'hair-beard': 14, beard: 7, kids: 8 }),
   },
 ]
-
-// Данни за страниците "Общи условия" и "Поверителност" (src/pages/Terms.jsx и Privacy.jsx).
-// ПОПЪЛНИ преди да дадеш линка на клиенти — стойностите в [скоби] се виждат на сайта.
-export const LEGAL = {
-  company: '[Име на фирмата / ЕТ]',
-  eik: '[ЕИК]',
-  email: '[имейл за контакт]',
-  updated: '5 ноември 2026',
-}
