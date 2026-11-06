@@ -8,6 +8,9 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 // Тайните трябва да са зададени, преди да заредим приложението (виж utils/secrets.js).
 process.env.SECRET = process.env.SECRET || 'test-secret';
 process.env.COOKIESECRET = process.env.COOKIESECRET || 'test-cookie-secret';
+// Ограниченията на опитите са изключени — тестовете регистрират и записват много бързо.
+// tests/api/rateLimit.test.js ги включва отново.
+process.env.RATE_LIMIT = 'off';
 
 let server;
 
