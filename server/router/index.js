@@ -4,14 +4,16 @@ const schedule = require('./schedule');
 const barbers = require('./barbers');
 const appointments = require('./appointments');
 const { authController, appointmentController } = require('../controllers');
+const limits = require('../utils/rateLimits');
 
 // Всички пътища тук започват с /api (виж index.js).
-router.post('/register', authController.register);
-router.post('/login', authController.login);
+// limits.* — ограничения на опитите (виж utils/rateLimits.js). При превишаване -> 429.
+router.post('/register', limits.register, authController.register);
+router.post('/login', limits.login, authController.login);
 router.post('/logout', authController.logout);
 // Забравена парола: 1) иска линк по имейл, 2) записва нова парола с кода от линка.
-router.post('/forgot-password', authController.forgotPassword);
-router.post('/reset-password', authController.resetPassword);
+router.post('/forgot-password', limits.forgotPassword, authController.forgotPassword);
+router.post('/reset-password', limits.resetPassword, authController.resetPassword);
 
 router.use('/users', users);
 // График на бръснарите — само за роли barber и owner.
