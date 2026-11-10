@@ -16,7 +16,8 @@
   --color-line: #242424;
   --color-ice: #5cbefd;
 
-  --animate-marquee: marquee 30s linear infinite;
+  /* 100s: лентата в Marquee.jsx има 20 надписа — със същата скорост като преди (6 надписа за 30s). */
+  --animate-marquee: marquee 100s linear infinite;
   --animate-marquee-slow: marquee 45s linear infinite;
 
   @keyframes marquee {

@@ -19,12 +19,17 @@ function Track({ items, className, itemClassName, separatorClassName }) {
 }
 
 function Marquee() {
-  const tape = Array.from({ length: 6 }, (_, i) => (i % 2 ? 'TrapBlade Studio' : 'TrapBlade Studio'))
+  // Едно копие на лентата трябва да е по-дълго от най-широкия екран (иначе отдясно остава празно),
+  // затова 20 надписа — около 3300px, стига и за 2560px екрани.
+  const tape = Array.from({ length: 20 }, () => 'TrapBlade Studio')
   const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS]
 
   return (
-    <div aria-hidden="true" className="overflow-hidden pt-4">
-      <div className="relative z-10 -mx-4 -rotate-2 overflow-hidden bg-ice py-2">
+    // Лентата е завъртяна на -2°, затова на широк екран краищата ѝ излизат над и под реда.
+    // overflow-x-clip реже само встрани (без хоризонтален скрол), а отгоре и отдолу нищо не се отрязва.
+    // py-* оставя място за наклона, а -mx-[5vw] прави лентата по-широка от екрана, за да не се виждат краищата ѝ.
+    <div aria-hidden="true" className="overflow-x-clip py-8 sm:py-10">
+      <div className="relative z-10 -mx-[5vw] -rotate-2 overflow-hidden bg-ice py-2">
         <Track
           items={tape}
           className="animate-marquee"
