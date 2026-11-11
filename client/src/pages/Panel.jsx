@@ -9,6 +9,11 @@ import FormError from '../components/Auth/FormError.jsx'
 import MonthCalendar from '../components/Panel/MonthCalendar.jsx'
 import GenerateMonthForm from '../components/Panel/GenerateMonthForm.jsx'
 import DayPanel from '../components/Panel/DayPanel.jsx'
+import LiveNotices from '../components/Panel/LiveNotices.jsx'
+import { useLiveUpdates } from '../hooks/useLiveUpdates.js'
+
+// Най-много толкова известия едновременно (най-новите отгоре) — повече покриват екрана на телефон.
+const MAX_LIVE_NOTICES = 3
 
 // Панел за бръснарите и собственика: графикът за месеца, часовете за деня и записаните клиенти.
 // Записването е без одобрение — клиентите, които се виждат тук, вече са записани.
@@ -28,6 +33,11 @@ function Panel() {
   // Заредените данни + за кой месец/бръснар/версия са (за да знаем дали още зареждаме).
   const [data, setData] = useState({ key: '', days: [], appointments: [], error: '' })
   const [notice, setNotice] = useState('')
+  // Тихо опресняване (нов или отменен час от клиент): презарежда месеца, без да сменя loadKey —
+  // календарът не потъмнява, а отворената форма и избраният ден остават.
+  const [refresh, setRefresh] = useState(0)
+  // Известия за нови и отменени часове, дошли без презареждане.
+  const [liveNotices, setLiveNotices] = useState([])
 
   const loadKey = `${month}|${barberId}|${version}`
   const isLoading = data.key !== loadKey
@@ -41,6 +51,8 @@ function Panel() {
   }, [])
 
   // Графикът и записаните часове за целия месец — с две заявки едновременно.
+  // Пуска се наново при смяна на месец/бръснар/версия и при тихо опресняване (refresh).
+  // Ако междувременно тръгне нова заявка, отговорът на старата се игнорира (ignore).
   useEffect(() => {
     let ignore = false
     Promise.all([getMonth(month, barberId), listForBarber({ month, barberId })])
@@ -53,7 +65,44 @@ function Panel() {
     return () => {
       ignore = true
     }
-  }, [month, barberId, loadKey])
+  }, [month, barberId, loadKey, refresh])
+
+  // Нови и отменени часове без презареждане: проверка на всеки 15 секунди (виж useLiveUpdates).
+  useLiveUpdates((appointments) => {
+    const barberOf = (a) => String(a.barber?._id ?? a.barber)
+    if (appointments.some((a) => barberOf(a) === String(barberId))) {
+      setRefresh((r) => r + 1)
+    }
+
+    // Известия само за промени, които не е направил самият бръснар (своите ги вижда веднага).
+    const fresh = appointments
+      .map((a) => {
+        if (a.status === 'booked' && String(a.createdBy) !== String(user._id)) return { type: 'new', appointment: a }
+        if (a.status === 'cancelled' && String(a.cancelledBy) !== String(user._id)) {
+          return { type: 'cancelled', appointment: a }
+        }
+        return null
+      })
+      .filter(Boolean)
+      .map((n) => ({ ...n, id: `${n.appointment._id}:${n.appointment.updatedAt}` }))
+      .reverse()
+    if (fresh.length) {
+      // За един и същ час пазим само последното известие (например "Нов час" -> "Отменен час").
+      const changedIds = new Set(fresh.map((n) => n.appointment._id))
+      setLiveNotices((prev) =>
+        [...fresh, ...prev.filter((n) => !changedIds.has(n.appointment._id))].slice(0, MAX_LIVE_NOTICES),
+      )
+    }
+  })
+
+  // Докато има известия, заглавието на таба показва броя им: "(2) Панел · TrapBlade".
+  useEffect(() => {
+    const original = document.title
+    if (liveNotices.length) document.title = `(${liveNotices.length}) Панел · TrapBlade`
+    return () => {
+      document.title = original
+    }
+  }, [liveNotices.length])
 
   // По дати: денят от графика, записаните часове (всички статуси) и заетите часове.
   const { daysByDate, appointmentsByDate, bookedByDate } = useMemo(() => {
@@ -80,6 +129,19 @@ function Panel() {
   const changeBarber = (id) => {
     setBarberId(id)
     setNotice('')
+  }
+
+  const dismissNotice = (id) => setLiveNotices((list) => list.filter((n) => n.id !== id))
+
+  // "Покажи": отваря месеца и деня на часа (а при собственика — и таба на бръснаря).
+  const showNotice = (id) => {
+    const found = liveNotices.find((n) => n.id === id)
+    if (!found) return
+    const { appointment: a } = found
+    if (isOwner && a.barber?._id) setBarberId(String(a.barber._id))
+    setMonth(monthOf(a.date))
+    setSelectedDate(a.date)
+    dismissNotice(id)
   }
 
   const reload = (message) => {
@@ -223,6 +285,14 @@ function Panel() {
           )}
         </div>
       </div>
+
+      <LiveNotices
+        notices={liveNotices}
+        showBarber={isOwner}
+        onShow={showNotice}
+        onDismiss={dismissNotice}
+        onDismissAll={() => setLiveNotices([])}
+      />
     </div>
   )
 }

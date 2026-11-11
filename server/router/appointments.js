@@ -16,6 +16,8 @@ router.patch('/:id/cancel', limits.cancel, appointmentController.cancel);
 
 // Само бръснари и собственика: requireRole() -> 403 за клиенти.
 router.get('/', requireRole('barber', 'owner'), appointmentController.listForBarber);
+// Промени след дадена дата — панелът пита на всеки 15 s, за да показва новите часове без презареждане.
+router.get('/updates', requireRole('barber', 'owner'), appointmentController.listUpdates);
 router.post('/manual', requireRole('barber', 'owner'), appointmentController.createManual);
 
 module.exports = router;
