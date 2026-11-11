@@ -70,6 +70,7 @@ npm run test:unit      # само бързите тестове без база
 | GET | `/appointments/mine` | логнат | всички мои часове |
 | PATCH | `/appointments/:id/cancel` | клиент / бръснар / owner | клиентът може да отмени най-късно 2 часа преди часа |
 | GET | `/appointments?date=` или `?month=` `[&barberId=][&status=]` | barber, owner | barber вижда своите, owner вижда всички |
+| GET | `/appointments/updates?since=<ISO>` | barber, owner | часовете, създадени или променени след `since` (за панела, на всеки 15 s). Отговор `{ serverTime, appointments }`; без `since` → само `serverTime`. бръснарят вижда своите, owner — всички |
 | POST | `/appointments/manual` | barber, owner | `{ date, time, clientName, clientPhone?, serviceId?, barberId? }`: бръснарят вписва клиент (часът може да е извън слотовете); `barberId` е само за owner |
 
 Статуси на час: `booked`, `cancelled`, `completed`, `no_show`.

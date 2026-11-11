@@ -104,6 +104,8 @@ appointmentSchema.index(
 appointmentSchema.index({ client: 1, date: 1 });
 // Графикът на всички бръснари за деня/месеца (за собственика).
 appointmentSchema.index({ date: 1, time: 1 });
+// Новите и променените часове за панела (GET /api/appointments/updates).
+appointmentSchema.index({ updatedAt: 1 });
 
 const appointmentModel = mongoose.model('Appointment', appointmentSchema);
 appointmentModel.STATUSES = STATUSES;
