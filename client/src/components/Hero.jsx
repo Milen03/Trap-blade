@@ -34,9 +34,7 @@ function Hero() {
           <div className="rounded-full border border-line p-3">
             <img src={logo} alt="TrapBlade лого" className="w-full rounded-full" />
           </div>
-          <span className="absolute -right-2 bottom-6 -rotate-6 bg-white px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-ink sm:-right-6">
-            Est. В. Търново
-          </span>
+          
         </div>
       </div>
     </section>

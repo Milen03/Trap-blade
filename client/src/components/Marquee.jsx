@@ -19,7 +19,7 @@ function Track({ items, className, itemClassName, separatorClassName }) {
 }
 
 function Marquee() {
-  const tape = Array.from({ length: 6 }, (_, i) => (i % 2 ? 'Запази час' : 'TrapBlade Studio'))
+  const tape = Array.from({ length: 6 }, (_, i) => (i % 2 ? 'TrapBlade Studio' : 'TrapBlade Studio'))
   const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS]
 
   return (
@@ -33,14 +33,14 @@ function Marquee() {
         />
       </div>
 
-      <div className="mt-6 overflow-hidden border-y border-line py-5">
+      {/* <div className="mt-6 overflow-hidden border-y border-line py-5">
         <Track
           items={words}
           className="animate-marquee-slow"
           itemClassName="gap-10 px-5 text-3xl font-bold tracking-[0.08em] sm:text-4xl"
           separatorClassName="font-normal text-ice"
         />
-      </div>
+      </div> */}
     </div>
   )
 }
