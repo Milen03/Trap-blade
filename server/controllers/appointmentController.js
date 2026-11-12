@@ -230,6 +230,47 @@ async function listForBarber(req, res, next) {
     }
 }
 
+// Колко назад (в ms) да гледаме спрямо предишната проверка. Запис, започнал точно докато сме чели,
+// може да има updatedAt малко преди serverTime — малкото застъпване гарантира, че няма да го изпуснем.
+// Клиентът маха повторенията по _id + updatedAt.
+const UPDATES_OVERLAP_MS = 5000;
+const UPDATES_LIMIT = 100;
+
+// GET /api/appointments/updates?since=<ISO дата>
+// Часовете, създадени или променени (записани, отменени) след since — за да види панелът новите
+// часове без презареждане. Бръснарят вижда своите, собственикът — на всички бръснари.
+// Без since връща само serverTime (началната точка). Отговор: { serverTime, appointments }.
+async function listUpdates(req, res, next) {
+    const { since } = req.query;
+
+    try {
+        const serverTime = new Date(Date.now() - UPDATES_OVERLAP_MS);
+
+        if (since === undefined || since === '') {
+            return res.status(200).json({ serverTime, appointments: [] });
+        }
+
+        const sinceDate = typeof since === 'string' ? new Date(since) : null;
+        if (!sinceDate || Number.isNaN(sinceDate.getTime())) {
+            throw httpError(400, 'since трябва да е дата (ISO), например 2026-11-11T10:00:00.000Z');
+        }
+
+        const filter = { updatedAt: { $gt: sinceDate } };
+        if (req.user.role !== 'owner') {
+            filter.barber = req.user._id;
+        }
+
+        const appointments = await appointmentModel
+            .find(filter)
+            .sort({ updatedAt: 1 })
+            .limit(UPDATES_LIMIT)
+            .populate('barber', BARBER_FIELDS);
+        res.status(200).json({ serverTime, appointments });
+    } catch (err) {
+        next(err);
+    }
+}
+
 // POST /api/appointments/manual — тяло: { date, time, clientName, clientPhone?, serviceId?, barberId? }
 // Бръснарят сам вписва човек (например обадил се по телефона) в своя график.
 // Часът може да е всеки валиден час от деня — не е задължително да е от слотовете.
@@ -282,5 +323,6 @@ module.exports = {
     listMine,
     cancel,
     listForBarber,
+    listUpdates,
     createManual,
 };

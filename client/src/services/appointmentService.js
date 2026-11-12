@@ -32,3 +32,9 @@ export function create(data) {
 export function listMine() {
   return api.get('/appointments/mine')
 }
+
+// За панела: часовете, създадени или променени след since (ISO дата от предишния отговор).
+// Без since връща само { serverTime } — началната точка. Отговор: { serverTime, appointments }.
+export function listUpdates(since) {
+  return api.get(`/appointments/updates${since ? `?${new URLSearchParams({ since })}` : ''}`)
+}
