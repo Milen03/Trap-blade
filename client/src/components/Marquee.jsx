@@ -1,4 +1,4 @@
-import { MARQUEE_WORDS } from '../data/studio.js'
+//import { MARQUEE_WORDS } from '../data/studio.js'
 
 // Each track is rendered twice so the -50% loop is seamless.
 function Track({ items, className, itemClassName, separatorClassName }) {
@@ -22,7 +22,7 @@ function Marquee() {
   // Едно копие на лентата трябва да е по-дълго от най-широкия екран (иначе отдясно остава празно),
   // затова 20 надписа — около 3300px, стига и за 2560px екрани.
   const tape = Array.from({ length: 20 }, () => 'TrapBlade Studio')
-  const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS]
+  // const words = [...MARQUEE_WORDS, ...MARQUEE_WORDS]
 
   return (
     // Лентата е завъртяна на -2°, затова на широк екран краищата ѝ излизат над и под реда.
