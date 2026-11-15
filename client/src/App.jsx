@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Route, Routes } from 'react-router-dom'
 import Home from './pages/Home.jsx'
 import Login from './components/Auth/Login.jsx'
 import Register from './components/Auth/Register.jsx'
@@ -10,6 +10,7 @@ import Panel from './pages/Panel.jsx'
 import MyAppointments from './pages/MyAppointments.jsx'
 import Settings from './pages/Settings.jsx'
 import ChangePassword from './pages/ChangePassword.jsx'
+import NotFound from './pages/NotFound.jsx'
 import Terms from './pages/Terms.jsx'
 import Privacy from './pages/Privacy.jsx'
 import { STAFF_ROLES } from './utils/roles.js'
@@ -44,7 +45,8 @@ function App() {
         <Route path="/panel" element={<Panel />} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* Всеки друг адрес — страница 404. */}
+      <Route path="*" element={<NotFound />} />
     </Routes>
   )
 }

@@ -10,6 +10,8 @@ router.put('/profile', auth(), authController.editProfileInfo);
 
 // "Настройки на профила": смяна на телефона и на паролата (изисква текущата парола).
 router.put('/phone', auth(), authController.changePhone);
+// Имейлът се сменя с текущата парола; грешните опити се броят както при смяна на паролата.
+router.put('/email', auth(), limits.changeEmail, authController.changeEmail);
 // limits.changePassword е след auth(), за да брои по профила.
 router.put('/password', auth(), limits.changePassword, authController.changePassword);
 

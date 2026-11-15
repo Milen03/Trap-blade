@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const utils = require('../utils');
 const config = require('../config/config');
 const { authCookieName } = require('../app-config');
-const { cleanString, pickProfile, validateProfile, PHONE_REGEX } = utils.validators;
+const { cleanString, pickProfile, validateProfile, PHONE_REGEX, EMAIL_REGEX } = utils.validators;
 
 // Колко дни важи сесията. Браузърите не пазят бисквитка повече от ~400 дни, затова 365.
 // Всеки път, когато потребителят отвори сайта, сесията се подновява за още 365 дни
@@ -152,6 +152,43 @@ async function changePhone(req, res, next) {
         const user = await userModel.findOneAndUpdate(
             { _id: req.user._id },
             { phone },
+            { runValidators: true, new: true }
+        );
+        res.status(200).json(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// PUT /api/users/email — тяло: { email, currentPassword }.
+// Имейлът е и името за вход, и адресът за "Забравена парола" — затова искаме текущата парола
+// (иначе някой с отворена чужда сесия би сложил своя имейл и после би откраднал профила).
+async function changeEmail(req, res, next) {
+    const email = cleanString(req.body.email).toLowerCase();
+    const currentPassword = typeof req.body.currentPassword === 'string' ? req.body.currentPassword : '';
+
+    if (!email) {
+        return res.status(400).send({ message: 'Въведи имейл' });
+    }
+    if (!EMAIL_REGEX.test(email) || email.length > 254) {
+        return res.status(400).send({ message: 'Невалиден имейл' });
+    }
+    if (email === req.user.email) {
+        return res.status(400).send({ message: 'Това е сегашният ти имейл' });
+    }
+    if (!currentPassword) {
+        return res.status(400).send({ message: 'Въведи текущата си парола' });
+    }
+
+    try {
+        if (!(await req.user.matchPassword(currentPassword))) {
+            return res.status(400).send({ message: 'Текущата парола е грешна' });
+        }
+
+        // Зает имейл -> уникалният индекс връща 11000 -> errorHandler: 409 "Този имейл вече е регистриран".
+        const user = await userModel.findOneAndUpdate(
+            { _id: req.user._id },
+            { email },
             { runValidators: true, new: true }
         );
         res.status(200).json(user);
@@ -308,5 +345,6 @@ module.exports = {
     getProfileInfo,
     editProfileInfo,
     changePhone,
+    changeEmail,
     changePassword,
 }

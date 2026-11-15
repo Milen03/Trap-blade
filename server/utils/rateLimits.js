@@ -115,6 +115,15 @@ const changePasswordPerUser = limiter({
     message: `Твърде много неуспешни опити за смяна на паролата. Опитай пак след ${minutes(15)}.`,
 });
 
+const changeEmailPerUser = limiter({
+    name: 'change-email-user',
+    windowMs: 15 * MINUTE,
+    limit: 5,
+    skipSuccessfulRequests: true,
+    key: (req) => (req.user ? String(req.user._id) : clientIp(req)),
+    message: `Твърде много неуспешни опити за смяна на имейла. Опитай пак след ${minutes(15)}.`,
+});
+
 // ---------- Записване на час ----------
 // Слага се СЛЕД auth(), за да брои по профила. (Освен това един клиент има най-много 2 предстоящи часа.)
 
@@ -143,6 +152,7 @@ module.exports = {
     forgotPassword: [forgotPerIp, forgotPerEmail],
     resetPassword: [resetPerIp],
     changePassword: [changePasswordPerUser],
+    changeEmail: [changeEmailPerUser],
     booking: [bookingPerUser],
     cancel: [cancelPerUser],
 };
