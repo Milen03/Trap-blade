@@ -2,6 +2,9 @@
 // Пример: "0888 123 456" или "+359 888 123 456".
 const PHONE_REGEX = /^\+?[0-9\s\-()]{7,20}$/;
 
+// Обикновена проверка за имейл: нещо@нещо.нещо, без интервали.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // MongoDB ObjectId като текст: 24 шестнайсетични знака.
 const OBJECT_ID_REGEX = /^[0-9a-f]{24}$/i;
 
@@ -46,6 +49,7 @@ function validateProfile({ firstName, lastName, phone }) {
 
 module.exports = {
     PHONE_REGEX,
+    EMAIL_REGEX,
     isObjectId,
     cleanString,
     pickProfile,

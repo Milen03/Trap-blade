@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
 import { STUDIO } from '../data/studio.js'
-import { PHONE_REGEX } from '../utils/validation.js'
+import { EMAIL_REGEX, PHONE_REGEX } from '../utils/validation.js'
 import FormError from '../components/Auth/FormError.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import { inputClass, labelClass, primaryButton, secondaryButton, sectionTitle } from '../components/Panel/ui.js'
@@ -16,54 +16,124 @@ function Row({ label, children }) {
   )
 }
 
-// "Настройки на профила": данните на потребителя, смяна на телефона и линк към смяна на паролата.
-// Името и имейла само се показват — сменят се през салона.
+// Ред със стойност и бутон "Промени", който се превръща във форма с поле, "Откажи" и "Запази".
+function EditableValue({ id, label, type, autoComplete, placeholder, value, editing, draft, error, onEdit, onDraft, onCancel, onSave }) {
+  if (!editing) {
+    return (
+      <div className="flex items-center justify-between gap-4 border border-line bg-coal px-4 py-3">
+        <span className="min-w-0 break-all font-bold">{value || '—'}</span>
+        <button type="button" onClick={onEdit} className={`${secondaryButton} shrink-0`}>
+          Промени
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={onSave} className="space-y-4 border border-line bg-coal p-4" noValidate>
+      <div>
+        <label htmlFor={id} className={labelClass}>
+          {label}
+        </label>
+        <input
+          id={id}
+          type={type}
+          autoComplete={autoComplete}
+          value={draft}
+          onChange={(e) => onDraft(e.target.value)}
+          placeholder={placeholder}
+          className={inputClass}
+          autoFocus
+        />
+      </div>
+      <FormError message={error} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button type="button" onClick={onCancel} className={secondaryButton}>
+          Откажи
+        </button>
+        <button type="submit" className={primaryButton}>
+          Запази
+        </button>
+      </div>
+    </form>
+  )
+}
+
+// "Настройки на профила": данните на потребителя, смяна на телефона и имейла, линк към смяна на паролата.
+// Името само се показва — сменя се през салона.
 function Settings() {
-  const { user, changePhone } = useAuth()
+  const { user, changePhone, changeEmail } = useAuth()
   const location = useLocation()
 
   // Съобщение, дошло от друга страница (например "Паролата е сменена" от ChangePassword.jsx).
   const [notice, setNotice] = useState(location.state?.notice || '')
-  const [editingPhone, setEditingPhone] = useState(false)
-  const [phone, setPhone] = useState(user.phone || '')
-  const [error, setError] = useState('')
-  const [confirming, setConfirming] = useState(false)
-  const [saving, setSaving] = useState(false)
+
+  // ---------- Телефон ----------
+  const [phone, setPhone] = useState({ editing: false, draft: '', error: '', confirming: false, saving: false })
+
+  // ---------- Имейл (иска и текущата парола в прозореца за потвърждение) ----------
+  const [email, setEmail] = useState({
+    editing: false,
+    draft: '',
+    error: '',
+    confirming: false,
+    saving: false,
+    password: '',
+    dialogError: '',
+  })
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' })
   }, [])
 
-  const startEditing = () => {
-    setPhone(user.phone || '')
-    setError('')
-    setNotice('')
-    setEditingPhone(true)
-  }
-
-  // "Запази" -> проверка -> прозорец "Сигурен ли си?".
-  const askToSave = (e) => {
+  const askToSavePhone = (e) => {
     e.preventDefault()
-    const value = phone.trim()
-    if (!value) return setError('Въведи телефон')
-    if (!PHONE_REGEX.test(value)) return setError('Невалиден телефонен номер')
-    if (value === (user.phone || '')) return setError('Това е сегашният ти телефон')
-    setError('')
-    setConfirming(true)
+    const value = phone.draft.trim()
+    let error = ''
+    if (!value) error = 'Въведи телефон'
+    else if (!PHONE_REGEX.test(value)) error = 'Невалиден телефонен номер'
+    else if (value === (user.phone || '')) error = 'Това е сегашният ти телефон'
+    setPhone((s) => ({ ...s, error, confirming: !error }))
   }
 
   const savePhone = async () => {
-    setSaving(true)
+    setPhone((s) => ({ ...s, saving: true }))
     try {
-      await changePhone(phone.trim())
-      setConfirming(false)
-      setEditingPhone(false)
+      await changePhone(phone.draft.trim())
+      setPhone({ editing: false, draft: '', error: '', confirming: false, saving: false })
       setNotice('Телефонът е сменен.')
     } catch (err) {
-      setConfirming(false)
-      setError(err.message)
-    } finally {
-      setSaving(false)
+      setPhone((s) => ({ ...s, confirming: false, saving: false, error: err.message }))
+    }
+  }
+
+  const askToSaveEmail = (e) => {
+    e.preventDefault()
+    const value = email.draft.trim().toLowerCase()
+    let error = ''
+    if (!value) error = 'Въведи имейл'
+    else if (!EMAIL_REGEX.test(value)) error = 'Невалиден имейл'
+    else if (value === user.email) error = 'Това е сегашният ти имейл'
+    setEmail((s) => ({ ...s, error, confirming: !error, password: '', dialogError: '' }))
+  }
+
+  const saveEmail = async () => {
+    if (!email.password) {
+      setEmail((s) => ({ ...s, dialogError: 'Въведи текущата си парола' }))
+      return
+    }
+    setEmail((s) => ({ ...s, saving: true, dialogError: '' }))
+    try {
+      await changeEmail(email.draft.trim().toLowerCase(), email.password)
+      setEmail({ editing: false, draft: '', error: '', confirming: false, saving: false, password: '', dialogError: '' })
+      setNotice('Имейлът е сменен. Оттук нататък влизаш с новия имейл.')
+    } catch (err) {
+      // Грешна парола -> остава в прозореца, за да опита пак. Друго (например зает имейл) -> във формата.
+      if (/парола/i.test(err.message)) {
+        setEmail((s) => ({ ...s, saving: false, password: '', dialogError: err.message }))
+      } else {
+        setEmail((s) => ({ ...s, saving: false, confirming: false, error: err.message }))
+      }
     }
   }
 
@@ -100,10 +170,9 @@ function Settings() {
             <dl className="divide-y divide-line border border-line bg-coal">
               <Row label="Име">{user.firstName}</Row>
               <Row label="Фамилия">{user.lastName}</Row>
-              <Row label="Имейл">{user.email}</Row>
             </dl>
             <p className="mt-2 text-xs text-white/50">
-              Името и имейлът не могат да се сменят оттук. Ако има грешка, обади се в салона:{' '}
+              Името не може да се сменя оттук. Ако има грешка, обади се в салона:{' '}
               <a href={STUDIO.phoneHref} className="text-ice hover:text-white">
                 {STUDIO.phone}
               </a>
@@ -111,44 +180,51 @@ function Settings() {
             </p>
           </section>
 
+          {/* ---------- Имейл ---------- */}
+          <section>
+            <h2 className={`${sectionTitle} mb-3`}>Имейл</h2>
+            <EditableValue
+              id="settings-email"
+              label="Нов имейл"
+              type="email"
+              autoComplete="email"
+              placeholder="ime@primer.bg"
+              value={user.email}
+              editing={email.editing}
+              draft={email.draft}
+              error={email.error}
+              onEdit={() => {
+                setNotice('')
+                setEmail((s) => ({ ...s, editing: true, draft: user.email, error: '' }))
+              }}
+              onDraft={(draft) => setEmail((s) => ({ ...s, draft }))}
+              onCancel={() => setEmail((s) => ({ ...s, editing: false, error: '' }))}
+              onSave={askToSaveEmail}
+            />
+            <p className="mt-2 text-xs text-white/50">С имейла влизаш в профила и на него получаваш линка при забравена парола.</p>
+          </section>
+
           {/* ---------- Телефон ---------- */}
           <section>
             <h2 className={`${sectionTitle} mb-3`}>Телефон</h2>
-            {editingPhone ? (
-              <form onSubmit={askToSave} className="space-y-4 border border-line bg-coal p-4">
-                <div>
-                  <label htmlFor="settings-phone" className={labelClass}>
-                    Нов телефон
-                  </label>
-                  <input
-                    id="settings-phone"
-                    type="tel"
-                    autoComplete="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="0888 123 456"
-                    className={inputClass}
-                    autoFocus
-                  />
-                </div>
-                <FormError message={error} />
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <button type="button" onClick={() => setEditingPhone(false)} className={secondaryButton}>
-                    Откажи
-                  </button>
-                  <button type="submit" className={primaryButton}>
-                    Запази
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="flex items-center justify-between gap-4 border border-line bg-coal px-4 py-3">
-                <span className="font-bold">{user.phone || '—'}</span>
-                <button type="button" onClick={startEditing} className={secondaryButton}>
-                  Промени
-                </button>
-              </div>
-            )}
+            <EditableValue
+              id="settings-phone"
+              label="Нов телефон"
+              type="tel"
+              autoComplete="tel"
+              placeholder="0888 123 456"
+              value={user.phone}
+              editing={phone.editing}
+              draft={phone.draft}
+              error={phone.error}
+              onEdit={() => {
+                setNotice('')
+                setPhone((s) => ({ ...s, editing: true, draft: user.phone || '', error: '' }))
+              }}
+              onDraft={(draft) => setPhone((s) => ({ ...s, draft }))}
+              onCancel={() => setPhone((s) => ({ ...s, editing: false, error: '' }))}
+              onSave={askToSavePhone}
+            />
           </section>
 
           {/* ---------- Парола ---------- */}
@@ -166,15 +242,51 @@ function Settings() {
         </main>
       </div>
 
-      {confirming && (
+      {phone.confirming && (
         <ConfirmDialog
           title="Смяна на телефона"
-          busy={saving}
+          busy={phone.saving}
           onConfirm={savePhone}
-          onCancel={() => setConfirming(false)}
+          onCancel={() => setPhone((s) => ({ ...s, confirming: false }))}
         >
-          Сигурен ли си, че искаш да смениш телефона си на <strong className="text-white">{phone.trim()}</strong>?
+          Сигурен ли си, че искаш да смениш телефона си на <strong className="text-white">{phone.draft.trim()}</strong>?
           Бръснарите ще ти звънят на този номер.
+        </ConfirmDialog>
+      )}
+
+      {email.confirming && (
+        <ConfirmDialog
+          title="Смяна на имейла"
+          busy={email.saving}
+          onConfirm={saveEmail}
+          onCancel={() => setEmail((s) => ({ ...s, confirming: false, password: '', dialogError: '' }))}
+        >
+          <p>
+            Сигурен ли си, че искаш да смениш имейла си на{' '}
+            <strong className="break-all text-white">{email.draft.trim().toLowerCase()}</strong>? Оттук нататък ще
+            влизаш с него.
+          </p>
+          <div className="mt-4">
+            <label htmlFor="confirm-email-password" className={labelClass}>
+              Текуща парола
+            </label>
+            <input
+              id="confirm-email-password"
+              type="password"
+              autoComplete="current-password"
+              value={email.password}
+              onChange={(e) => setEmail((s) => ({ ...s, password: e.target.value, dialogError: '' }))}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') saveEmail()
+              }}
+              className={inputClass}
+              autoFocus
+            />
+            <p className="mt-2 text-xs text-white/50">За сигурност — само ти можеш да смениш имейла си.</p>
+          </div>
+          <div className="mt-3">
+            <FormError message={email.dialogError} />
+          </div>
         </ConfirmDialog>
       )}
     </div>

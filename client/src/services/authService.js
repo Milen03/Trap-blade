@@ -42,3 +42,8 @@ export function changePhone(phone) {
 export function changePassword(currentPassword, password, rePassword) {
   return api.put('/users/password', { currentPassword, password, rePassword })
 }
+
+// "Настройки на профила": сменя имейла (иска текущата парола). Връща обновения потребител.
+export function changeEmail(email, currentPassword) {
+  return api.put('/users/email', { email, currentPassword })
+}

@@ -71,3 +71,33 @@ describe('Настройки на профила', () => {
         });
     });
 });
+
+describe('Смяна на имейла', () => {
+    const change = (agent, body) => agent.put('/api/users/email').send(body);
+
+    it('с вярна парола -> 200; входът става с новия имейл, а старият вече не работи', async () => {
+        const { agent, user } = await f.registerClient();
+        const res = await change(agent, { email: '  Nov.Imeil@Test.bg ', currentPassword: f.PASSWORD }).expect(200);
+        assert.equal(res.body.email, 'nov.imeil@test.bg');
+
+        await f.guest().post('/api/login').send({ email: user.email, password: f.PASSWORD }).expect(401);
+        await f.guest().post('/api/login').send({ email: 'nov.imeil@test.bg', password: f.PASSWORD }).expect(200);
+    });
+
+    it('грешни данни -> 400; зает имейл -> 409; гост -> 401', async () => {
+        const { agent, user } = await f.registerClient('Първи');
+        const { user: other } = await f.registerClient('Втори');
+
+        let res = await change(agent, { email: 'nov@test.bg', currentPassword: 'wrong-pass' }).expect(400);
+        assert.match(res.body.message, /Текущата парола е грешна/);
+        await change(agent, { email: 'nov@test.bg' }).expect(400);
+        await change(agent, { email: 'не-е-имейл', currentPassword: f.PASSWORD }).expect(400);
+        res = await change(agent, { email: user.email, currentPassword: f.PASSWORD }).expect(400);
+        assert.match(res.body.message, /сегашният/);
+
+        res = await change(agent, { email: other.email, currentPassword: f.PASSWORD }).expect(409);
+        assert.match(res.body.message, /вече е регистриран/);
+
+        await f.guest().put('/api/users/email').send({ email: 'x@test.bg', currentPassword: 'x' }).expect(401);
+    });
+});
