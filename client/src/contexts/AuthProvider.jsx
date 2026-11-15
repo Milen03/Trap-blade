@@ -48,6 +48,10 @@ function AuthProvider({ children }) {
       register: (data) => saveUser(authService.register(data)),
       // Записва новата парола и логва потребителя (виж ResetPassword.jsx).
       resetPassword: (token, password, rePassword) => saveUser(authService.resetPassword(token, password, rePassword)),
+      // "Настройки на профила" — новият телефон се вижда веднага навсякъде.
+      changePhone: (phone) => saveUser(authService.changePhone(phone)),
+      changePassword: (currentPassword, password, rePassword) =>
+        saveUser(authService.changePassword(currentPassword, password, rePassword)),
       logout: async () => {
         try {
           await authService.logout()

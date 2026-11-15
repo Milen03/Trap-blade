@@ -103,9 +103,17 @@ function MyAppointments() {
           >
             <span aria-hidden="true">←</span> Начало
           </Link>
-          <Link to="/" className="font-brand text-3xl leading-none">
-            TrapBlade
-          </Link>
+          <div className="flex items-center gap-5">
+            <Link
+              to="/settings"
+              className="text-sm font-semibold uppercase tracking-[0.2em] text-white/80 transition-colors hover:text-ice"
+            >
+              Настройки
+            </Link>
+            <Link to="/" className="font-brand text-3xl leading-none">
+              TrapBlade
+            </Link>
+          </div>
         </header>
 
         <main className="pt-14 sm:pt-16">

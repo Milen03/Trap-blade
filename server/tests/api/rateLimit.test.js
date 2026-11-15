@@ -75,6 +75,16 @@ describe('Ограничения на опитите', () => {
         await attempt(second.agent).expect(400);
     });
 
+    it('смяна на паролата: 5 грешни текущи пароли за 15 мин -> 6-ият опит е 429', async () => {
+        const { agent } = await f.registerClient();
+        const change = (currentPassword) =>
+            agent.put('/api/users/password').send({ currentPassword, password: 'novaParola1', rePassword: 'novaParola1' });
+        for (let i = 0; i < 5; i += 1) {
+            await change('wrong-pass').expect(400);
+        }
+        await change(f.PASSWORD).expect(429);
+    });
+
     it('отмяна: бръснарите не се ограничават', async () => {
         const barber = await f.loginAs(await f.createStaff('barber'));
         for (let i = 0; i < 25; i += 1) {

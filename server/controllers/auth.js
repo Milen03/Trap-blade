@@ -7,7 +7,7 @@ const crypto = require('crypto');
 const utils = require('../utils');
 const config = require('../config/config');
 const { authCookieName } = require('../app-config');
-const { cleanString, pickProfile, validateProfile } = utils.validators;
+const { cleanString, pickProfile, validateProfile, PHONE_REGEX } = utils.validators;
 
 // Колко дни важи сесията. Браузърите не пазят бисквитка повече от ~400 дни, затова 365.
 // Всеки път, когато потребителят отвори сайта, сесията се подновява за още 365 дни
@@ -132,6 +132,72 @@ async function editProfileInfo(req, res, next) {
     }
 }
 
+// ---------- Настройки на профила ----------
+
+const MIN_PASSWORD_LENGTH = 6;
+
+// PUT /api/users/phone — тяло: { phone }. Сменя само телефона на логнатия потребител
+// (името и имейла не се сменят от "Настройки на профила").
+async function changePhone(req, res, next) {
+    const phone = cleanString(req.body.phone);
+
+    if (!phone) {
+        return res.status(400).send({ message: 'Въведи телефон' });
+    }
+    if (!PHONE_REGEX.test(phone)) {
+        return res.status(400).send({ message: 'Невалиден телефонен номер' });
+    }
+
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { _id: req.user._id },
+            { phone },
+            { runValidators: true, new: true }
+        );
+        res.status(200).json(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// PUT /api/users/password — тяло: { currentPassword, password, rePassword }.
+// Изисква текущата парола — така някой, който е намерил отворена сесия, не може да смени паролата.
+async function changePassword(req, res, next) {
+    const currentPassword = typeof req.body.currentPassword === 'string' ? req.body.currentPassword : '';
+    const { password, rePassword } = req.body;
+
+    if (!currentPassword) {
+        return res.status(400).send({ message: 'Въведи текущата си парола' });
+    }
+    if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
+        return res.status(400).send({ message: `Новата парола трябва да е поне ${MIN_PASSWORD_LENGTH} символа` });
+    }
+    if (password !== rePassword) {
+        return res.status(400).send({ message: 'Новите пароли не съвпадат' });
+    }
+
+    try {
+        // req.user е зареден от auth() наново от базата, затова паролата (хешът) е актуална.
+        const user = req.user;
+        if (!(await user.matchPassword(currentPassword))) {
+            return res.status(400).send({ message: 'Текущата парола е грешна' });
+        }
+        if (await user.matchPassword(password)) {
+            return res.status(400).send({ message: 'Новата парола трябва да е различна от сегашната' });
+        }
+
+        // Новата парола се хешира автоматично в userModel (pre 'save').
+        user.password = password;
+        await user.save();
+
+        // Нова бисквитка — потребителят остава влязъл.
+        setAuthCookie(res, user);
+        res.status(200).json(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
 // ---------- Забравена парола ----------
 
 // Колко минути важи линкът от писмото.
@@ -241,4 +307,6 @@ module.exports = {
     resetPassword,
     getProfileInfo,
     editProfileInfo,
+    changePhone,
+    changePassword,
 }

@@ -103,6 +103,18 @@ const resetPerIp = limiter({
     message: `Твърде много опити. Опитай пак след ${minutes(15)}.`,
 });
 
+// ---------- Смяна на паролата (от "Настройки на профила") ----------
+// Слага се СЛЕД auth(). Брои само неуспешните опити — например грешна текуща парола.
+
+const changePasswordPerUser = limiter({
+    name: 'change-password-user',
+    windowMs: 15 * MINUTE,
+    limit: 5,
+    skipSuccessfulRequests: true,
+    key: (req) => (req.user ? String(req.user._id) : clientIp(req)),
+    message: `Твърде много неуспешни опити за смяна на паролата. Опитай пак след ${minutes(15)}.`,
+});
+
 // ---------- Записване на час ----------
 // Слага се СЛЕД auth(), за да брои по профила. (Освен това един клиент има най-много 2 предстоящи часа.)
 
@@ -130,6 +142,7 @@ module.exports = {
     register: [registerPerIp],
     forgotPassword: [forgotPerIp, forgotPerEmail],
     resetPassword: [resetPerIp],
+    changePassword: [changePasswordPerUser],
     booking: [bookingPerUser],
     cancel: [cancelPerUser],
 };
