@@ -8,6 +8,8 @@ import GuestOnly from './components/Auth/GuestOnly.jsx'
 import RequireRole from './components/Auth/RequireRole.jsx'
 import Panel from './pages/Panel.jsx'
 import MyAppointments from './pages/MyAppointments.jsx'
+import Settings from './pages/Settings.jsx'
+import ChangePassword from './pages/ChangePassword.jsx'
 import Terms from './pages/Terms.jsx'
 import Privacy from './pages/Privacy.jsx'
 import { STAFF_ROLES } from './utils/roles.js'
@@ -32,6 +34,9 @@ function App() {
       {/* "Моите часове" — за всеки логнат потребител. */}
       <Route element={<RequireRole />}>
         <Route path="/my-appointments" element={<MyAppointments />} />
+        {/* "Настройки на профила": данните ми, смяна на телефона и на паролата. */}
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/settings/password" element={<ChangePassword />} />
       </Route>
 
       {/* Панел за бръснарите и собственика. */}

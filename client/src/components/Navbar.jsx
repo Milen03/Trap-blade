@@ -5,6 +5,16 @@ import { NAV_LINKS } from '../data/studio.js'
 import { useAuth } from '../hooks/useAuth.js'
 import { isStaff } from '../utils/roles.js'
 
+// Зъбно колело до името — показва, че оттам се влиза в "Настройки на профила".
+function GearIcon({ className }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+    </svg>
+  )
+}
+
 function Navbar() {
   const [open, setOpen] = useState(false)
   const close = () => setOpen(false)
@@ -48,10 +58,19 @@ function Navbar() {
                   >
                     {isStaff(user) ? 'Панел' : 'Моите часове'}
                   </Link>
-                  <span className="flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-white/80">
+                  {/* "Welcome Име" води към "Настройки на профила". */}
+                  <Link
+                    to="/settings"
+                    title="Настройки на профила"
+                    aria-label={`Настройки на профила (${user.firstName})`}
+                    className="group flex items-baseline gap-2 text-xs font-semibold uppercase tracking-[0.15em] text-white/80"
+                  >
                     <span className="font-gothic text-xl normal-case leading-none tracking-normal">Welcome</span>
-                    <span className="text-xl leading-none text-ice">{user.firstName}</span>
-                  </span>
+                    <span className="text-xl leading-none text-ice transition-colors group-hover:text-white">
+                      {user.firstName}
+                    </span>
+                    <GearIcon className="h-4 w-4 self-center text-white/60 transition-colors group-hover:text-ice" />
+                  </Link>
                   <button
                     type="button"
                     onClick={handleLogout}
@@ -123,13 +142,29 @@ function Navbar() {
               </Link>
             </li>
           )}
+          {!isLoading && user && (
+            <li>
+              <Link
+                to="/settings"
+                onClick={close}
+                className="flex items-center gap-3 border-b border-line py-4 text-lg font-semibold uppercase tracking-[0.15em] hover:text-ice"
+              >
+                <GearIcon className="h-5 w-5" />
+                Настройки
+              </Link>
+            </li>
+          )}
           {!isLoading &&
             (user ? (
               <li className="flex items-center justify-between gap-3 pt-6">
-                <span className="flex items-baseline gap-2 text-sm font-semibold uppercase tracking-[0.15em] text-white/80">
+                <Link
+                  to="/settings"
+                  onClick={close}
+                  className="flex items-baseline gap-2 text-sm font-semibold uppercase tracking-[0.15em] text-white/80"
+                >
                   <span className="font-gothic text-2xl normal-case leading-none tracking-normal">Welcome</span>
                   <span className="text-2xl leading-none text-ice">{user.firstName}</span>
-                </span>
+                </Link>
                 <button
                   type="button"
                   onClick={handleLogout}

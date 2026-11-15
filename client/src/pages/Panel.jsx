@@ -174,6 +174,12 @@ function Panel() {
             <span className="hidden text-sm uppercase tracking-[0.15em] text-white/60 sm:inline">
               {user.firstName} {user.lastName}
             </span>
+            <Link
+              to="/settings"
+              className="text-xs font-bold uppercase tracking-[0.15em] text-white/80 transition-colors hover:text-ice"
+            >
+              Настройки
+            </Link>
             <button
               type="button"
               onClick={logout}

@@ -32,3 +32,13 @@ export function resetPassword(token, password, rePassword) {
 export function getProfile() {
   return api.get('/users/profile')
 }
+
+// "Настройки на профила": сменя само телефона. Връща обновения потребител.
+export function changePhone(phone) {
+  return api.put('/users/phone', { phone })
+}
+
+// "Настройки на профила": смяна на паролата с текущата парола. Връща потребителя.
+export function changePassword(currentPassword, password, rePassword) {
+  return api.put('/users/password', { currentPassword, password, rePassword })
+}
