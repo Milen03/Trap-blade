@@ -10,16 +10,20 @@
 //
 // Никога не вярвай на имейл/ID, пратени "на ръка" от клиента — само на проверения токен.
 const jwt = require('jsonwebtoken');
-const jwksClient = require('jwks-rsa');
 const { httpError } = require('./errHandler');
 
 const GOOGLE_JWKS_URI = 'https://www.googleapis.com/oauth2/v3/certs';
 const GOOGLE_ISSUERS = ['accounts.google.com', 'https://accounts.google.com'];
 
 // Ключовете на Google се кешират — не ги теглим при всеки вход.
+// jwks-rsa се зарежда чак тук (а не при старта на сървъра): ако с този пакет има проблем,
+// пада само входът с Google, а не целият сървър.
+// ВАЖНО: jwks-rsa остава на версия 3 — версия 4 зарежда jose@6, който е само ES module,
+// и на Node без require(esm) сървърът не тръгва (виж tests/unit/startup.test.js).
 let keys = null;
 function getKeys() {
     if (!keys) {
+        const jwksClient = require('jwks-rsa');
         keys = jwksClient({ jwksUri: GOOGLE_JWKS_URI, cache: true, rateLimit: true });
     }
     return keys;

@@ -33,7 +33,7 @@
     "express": "^4.22.3",
     "express-rate-limit": "^8.7.3",
     "jsonwebtoken": "^9.0.3",
-    "jwks-rsa": "^4.1.0",
+    "jwks-rsa": "^3.2.2",
     "luxon": "^3.7.2",
     "mongoose": "^8.24.8"
   },
