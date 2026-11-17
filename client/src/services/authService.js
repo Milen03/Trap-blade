@@ -47,3 +47,14 @@ export function changePassword(currentPassword, password, rePassword) {
 export function changeEmail(email, currentPassword) {
   return api.put('/users/email', { email, currentPassword })
 }
+
+// "Продължи с Google": credential е ID token-ът от бутона на Google. Сървърът го проверява.
+// Връща потребителя; при нов профил profileComplete е false -> "Довърши регистрацията".
+export function googleLogin(credential) {
+  return api.post('/login/google', { credential })
+}
+
+// "Довърши регистрацията" (и смяна на имената): { firstName, lastName, phone }.
+export function updateProfile(data) {
+  return api.put('/users/profile', data)
+}

@@ -27,6 +27,8 @@ npm run test:unit      # само бързите тестове без база
 
 В production (`NODE_ENV=production`) сървърът не тръгва без `SECRET` и `COOKIESECRET`.
 
+Вход с Google: `GOOGLE_CLIENT_ID` (OAuth Client ID от Google Cloud Console; същият като `VITE_GOOGLE_CLIENT_ID` в клиента). Без него `/login/google` връща 503.
+
 ## Роли
 
 | Роля | Кой | Какво може |
@@ -46,6 +48,7 @@ npm run test:unit      # само бързите тестове без база
 |---|---|---|
 | POST | `/register` | `{ email, password, rePassword, firstName, lastName, phone }` |
 | POST | `/login` | `{ email, password }` |
+| POST | `/login/google` | `{ credential }` (ID token от бутона на Google). Нов профил е без телефон (`profileComplete: false`) → клиентът показва „Довърши регистрацията“. Свързва се със съществуващ профил с потвърден имейл |
 | POST | `/logout` | — |
 | POST | `/forgot-password` | `{ email }`: праща линк по имейл |
 | POST | `/reset-password` | `{ token, password, rePassword }` |

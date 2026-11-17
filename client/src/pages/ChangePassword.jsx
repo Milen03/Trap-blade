@@ -10,18 +10,21 @@ import ConfirmDialog from '../components/ConfirmDialog.jsx'
 const INITIAL_VALUES = { currentPassword: '', password: '', rePassword: '' }
 
 // Проверки преди изпращане (сървърът проверява същото). Връща текст на грешката или ''.
-function validate({ currentPassword, password, rePassword }) {
-  if (!currentPassword) return 'Въведи текущата си парола'
+// needsCurrent: false за профил само с Google (задава първа парола, текуща няма).
+function validate({ currentPassword, password, rePassword }, needsCurrent) {
+  if (needsCurrent && !currentPassword) return 'Въведи текущата си парола'
   if (password.length < MIN_PASSWORD_LENGTH) return `Новата парола трябва да е поне ${MIN_PASSWORD_LENGTH} символа`
   if (password !== rePassword) return 'Новите пароли не съвпадат'
-  if (password === currentPassword) return 'Новата парола трябва да е различна от сегашната'
+  if (needsCurrent && password === currentPassword) return 'Новата парола трябва да е различна от сегашната'
   return ''
 }
 
 // "Настройки на профила" -> "Смени паролата": текуща парола, нова, повтори новата.
 // Преди запис — прозорец "Сигурен ли си?". След успех — обратно в настройките.
 function ChangePassword() {
-  const { changePassword } = useAuth()
+  const { user, changePassword } = useAuth()
+  // Профил само с Google: задава първа парола — без поле за текуща.
+  const isFirstPassword = !user.hasPassword
   const navigate = useNavigate()
 
   const [values, setValues] = useState(INITIAL_VALUES)
@@ -36,7 +39,7 @@ function ChangePassword() {
 
   const askToSave = (e) => {
     e.preventDefault()
-    const validationError = validate(values)
+    const validationError = validate(values, !isFirstPassword)
     setError(validationError)
     if (!validationError) setConfirming(true)
   }
@@ -44,8 +47,11 @@ function ChangePassword() {
   const save = async () => {
     setSaving(true)
     try {
-      await changePassword(values.currentPassword, values.password, values.rePassword)
-      navigate('/settings', { replace: true, state: { notice: 'Паролата е сменена.' } })
+      await changePassword(isFirstPassword ? '' : values.currentPassword, values.password, values.rePassword)
+      const notice = isFirstPassword
+        ? 'Паролата е зададена. Вече можеш да влизаш и с имейл и парола.'
+        : 'Паролата е сменена.'
+      navigate('/settings', { replace: true, state: { notice } })
     } catch (err) {
       setConfirming(false)
       setError(err.message)
@@ -56,29 +62,33 @@ function ChangePassword() {
   return (
     <AuthLayout
       title="Password"
-      subtitle="Смяна на паролата."
+      subtitle={isFirstPassword ? 'Задай парола, за да влизаш и с имейл, не само с Google.' : 'Смяна на паролата.'}
       footer={
         <div className="flex flex-wrap items-center justify-between gap-4">
           <Link to="/settings" className="uppercase tracking-[0.15em] hover:text-ice">
             ← Настройки на профила
           </Link>
-          <Link to="/forgot-password" className="underline underline-offset-4 hover:text-ice">
-            Забравих текущата парола
-          </Link>
+          {!isFirstPassword && (
+            <Link to="/forgot-password" className="underline underline-offset-4 hover:text-ice">
+              Забравих текущата парола
+            </Link>
+          )}
         </div>
       }
     >
       <form onSubmit={askToSave} className="mt-10 space-y-8" noValidate>
-        <AuthField
-          id="currentPassword"
-          label="Текуща парола"
-          type="password"
-          autoComplete="current-password"
-          revealable
-          value={values.currentPassword}
-          onChange={handleChange}
-          required
-        />
+        {!isFirstPassword && (
+          <AuthField
+            id="currentPassword"
+            label="Текуща парола"
+            type="password"
+            autoComplete="current-password"
+            revealable
+            value={values.currentPassword}
+            onChange={handleChange}
+            required
+          />
+        )}
         <AuthField
           id="password"
           label="Нова парола"
@@ -107,18 +117,21 @@ function ChangePassword() {
           type="submit"
           className="h-16 w-full bg-ice text-sm font-bold uppercase tracking-[0.25em] text-ink transition-colors hover:bg-white"
         >
-          Смени паролата
+          {isFirstPassword ? 'Задай парола' : 'Смени паролата'}
         </button>
       </form>
 
       {confirming && (
         <ConfirmDialog
-          title="Смяна на паролата"
+          title={isFirstPassword ? 'Задаване на парола' : 'Смяна на паролата'}
+          confirmLabel={isFirstPassword ? 'Да, задай' : 'Да, смени'}
           busy={saving}
           onConfirm={save}
           onCancel={() => setConfirming(false)}
         >
-          Сигурен ли си, че искаш да смениш паролата си? След това ще влизаш само с новата парола.
+          {isFirstPassword
+            ? 'Сигурен ли си, че искаш да зададеш тази парола? Ще можеш да влизаш и с Google, и с имейл и парола.'
+            : 'Сигурен ли си, че искаш да смениш паролата си? След това ще влизаш само с новата парола.'}
         </ConfirmDialog>
       )}
     </AuthLayout>

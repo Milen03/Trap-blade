@@ -183,6 +183,7 @@ function Settings() {
           {/* ---------- Имейл ---------- */}
           <section>
             <h2 className={`${sectionTitle} mb-3`}>Имейл</h2>
+            {user.hasPassword ? (
             <EditableValue
               id="settings-email"
               label="Нов имейл"
@@ -201,7 +202,17 @@ function Settings() {
               onCancel={() => setEmail((s) => ({ ...s, editing: false, error: '' }))}
               onSave={askToSaveEmail}
             />
-            <p className="mt-2 text-xs text-white/50">С имейла влизаш в профила и на него получаваш линка при забравена парола.</p>
+            ) : (
+              // Профил само с Google: имейлът идва от Google и не се сменя, докато няма парола.
+              <div className="border border-line bg-coal px-4 py-3">
+                <span className="break-all font-bold">{user.email}</span>
+              </div>
+            )}
+            <p className="mt-2 text-xs text-white/50">
+              {user.hasPassword
+                ? 'С имейла влизаш в профила и на него получаваш линка при забравена парола.'
+                : 'Влизаш с Google — имейлът идва оттам. За да го смениш, първо си задай парола.'}
+            </p>
           </section>
 
           {/* ---------- Телефон ---------- */}
@@ -231,13 +242,20 @@ function Settings() {
           <section>
             <h2 className={`${sectionTitle} mb-3`}>Парола</h2>
             <div className="flex items-center justify-between gap-4 border border-line bg-coal px-4 py-3">
-              <span aria-hidden="true" className="font-bold tracking-[0.3em]">
-                ••••••••
-              </span>
-              <Link to="/settings/password" className={`${secondaryButton} inline-grid place-items-center`}>
-                Смени паролата
+              {user.hasPassword ? (
+                <span aria-hidden="true" className="font-bold tracking-[0.3em]">
+                  ••••••••
+                </span>
+              ) : (
+                <span className="text-sm text-white/70">Нямаш парола — влизаш с Google.</span>
+              )}
+              <Link to="/settings/password" className={`${secondaryButton} inline-grid shrink-0 place-items-center`}>
+                {user.hasPassword ? 'Смени паролата' : 'Задай парола'}
               </Link>
             </div>
+            {user.hasGoogle && user.hasPassword && (
+              <p className="mt-2 text-xs text-white/50">Можеш да влизаш и с Google, и с имейл и парола.</p>
+            )}
           </section>
         </main>
       </div>

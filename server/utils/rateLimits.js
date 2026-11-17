@@ -66,6 +66,15 @@ const loginPerIp = limiter({
     message: `Твърде много опити за вход. Опитай пак след ${minutes(15)}.`,
 });
 
+// Вход с Google: всички опити от един IP адрес — 50 за 15 минути.
+const googleLoginPerIp = limiter({
+    name: 'google-login-ip',
+    windowMs: 15 * MINUTE,
+    limit: 50,
+    key: clientIp,
+    message: `Твърде много опити за вход. Опитай пак след ${minutes(15)}.`,
+});
+
 // ---------- Регистрация ----------
 
 const registerPerIp = limiter({
@@ -148,6 +157,7 @@ const cancelPerUser = limiter({
 module.exports = {
     clientIp,
     login: [loginPerIp, loginPerEmail],
+    googleLogin: [googleLoginPerIp],
     register: [registerPerIp],
     forgotPassword: [forgotPerIp, forgotPerEmail],
     resetPassword: [resetPerIp],

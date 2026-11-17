@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 // Кога за последно са променяни условията и политиката — смени датата, когато промениш текста.
-const LAST_UPDATED = '5 ноември 2026'
+const LAST_UPDATED = '17 ноември 2026'
 
 // Общ шаблон за "Общи условия" и "Поверителност".
 export function LegalSection({ title, children }) {

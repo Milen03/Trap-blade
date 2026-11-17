@@ -5,6 +5,7 @@ import { MIN_PASSWORD_LENGTH, validateProfile } from '../../utils/validation.js'
 import AuthLayout from './AuthLayout.jsx'
 import AuthField from './AuthField.jsx'
 import FormError from './FormError.jsx'
+import GoogleSignIn from './GoogleSignIn.jsx'
 import { homePath } from '../../utils/roles.js'
 
 const INITIAL_VALUES = {
@@ -190,6 +191,8 @@ function Register() {
           Register
         </button>
       </form>
+
+      <GoogleSignIn />
     </AuthLayout>
   )
 }

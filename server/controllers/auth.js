@@ -73,7 +73,60 @@ async function login(req, res, next) {
         const match = user ? await user.matchPassword(password) : false;
 
         if (!match) {
-            return res.status(401).send({ message: 'Грешен имейл или парола' });
+            // Профил без парола -> създаден е с Google.
+            const message = user && !user.password
+                ? 'Този профил е създаден с Google. Влез с бутона „Продължи с Google“.'
+                : 'Грешен имейл или парола';
+            return res.status(401).send({ message });
+        }
+
+        setAuthCookie(res, user);
+        res.status(200).send(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
+// Имената от Google са само предложение — потребителят ги потвърждава в "Довърши регистрацията".
+const nameFromGoogle = (value) => cleanString(value).slice(0, 50) || undefined;
+
+// POST /api/login/google — тяло: { credential } (ID token от бутона "Продължи с Google").
+// 1) Вече е влизал с Google -> вход.
+// 2) Има профил със същия ПОТВЪРДЕН от Google имейл -> свързваме Google към него (без втори профил).
+// 3) Иначе -> нов профил без телефон и без парола; клиентът показва "Довърши регистрацията".
+async function googleLogin(req, res, next) {
+    try {
+        // През utils.oauth (а не деструктуриран), за да може тестовете да го подменят.
+        const payload = await utils.oauth.verifyGoogleIdToken(req.body.credential);
+        const email = cleanString(payload.email).toLowerCase();
+        const emailVerified = payload.email_verified === true || payload.email_verified === 'true';
+
+        let user = await userModel.findOne({ googleId: payload.sub });
+
+        if (!user && email && emailVerified) {
+            user = await userModel.findOne({ email });
+            if (user) {
+                // updateOne, за да не пускаме валидацията на целия профил.
+                await userModel.updateOne({ _id: user._id }, {
+                    googleId: payload.sub,
+                    firstName: user.firstName || nameFromGoogle(payload.given_name),
+                    lastName: user.lastName || nameFromGoogle(payload.family_name),
+                });
+                user = await userModel.findById(user._id);
+            }
+        }
+
+        if (!user) {
+            if (!email) {
+                return res.status(400).send({ message: 'Google не ни предостави имейл. Опитай с имейл и парола.' });
+            }
+            // Ако имейлът вече е зает (но Google не го е потвърдил) -> 409 от errorHandler.
+            user = await userModel.create({
+                email,
+                googleId: payload.sub,
+                firstName: nameFromGoogle(payload.given_name),
+                lastName: nameFromGoogle(payload.family_name),
+            });
         }
 
         setAuthCookie(res, user);
@@ -173,6 +226,9 @@ async function changeEmail(req, res, next) {
     if (!EMAIL_REGEX.test(email) || email.length > 254) {
         return res.status(400).send({ message: 'Невалиден имейл' });
     }
+    if (!req.user.password) {
+        return res.status(400).send({ message: 'Имейлът идва от Google и не може да се смени оттук. Първо си задай парола.' });
+    }
     if (email === req.user.email) {
         return res.status(400).send({ message: 'Това е сегашният ти имейл' });
     }
@@ -203,7 +259,10 @@ async function changePassword(req, res, next) {
     const currentPassword = typeof req.body.currentPassword === 'string' ? req.body.currentPassword : '';
     const { password, rePassword } = req.body;
 
-    if (!currentPassword) {
+    // Профил само с Google още няма парола -> задава си първа, без текуща.
+    const settingFirstPassword = !req.user.password;
+
+    if (!currentPassword && !settingFirstPassword) {
         return res.status(400).send({ message: 'Въведи текущата си парола' });
     }
     if (typeof password !== 'string' || password.length < MIN_PASSWORD_LENGTH) {
@@ -216,7 +275,7 @@ async function changePassword(req, res, next) {
     try {
         // req.user е зареден от auth() наново от базата, затова паролата (хешът) е актуална.
         const user = req.user;
-        if (!(await user.matchPassword(currentPassword))) {
+        if (!settingFirstPassword && !(await user.matchPassword(currentPassword))) {
             return res.status(400).send({ message: 'Текущата парола е грешна' });
         }
         if (await user.matchPassword(password)) {
@@ -338,6 +397,7 @@ async function resetPassword(req, res, next) {
 
 module.exports = {
     login,
+    googleLogin,
     register,
     logout,
     forgotPassword,
