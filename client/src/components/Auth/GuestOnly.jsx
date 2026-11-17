@@ -11,6 +11,9 @@ function GuestOnly() {
   const location = useLocation()
 
   if (isLoading) return null
+  if (user && !user.profileComplete) {
+    return <Navigate to="/complete-profile" replace state={{ from: location.state?.from }} />
+  }
   if (user) return <Navigate to={location.state?.from || homePath(user)} replace />
   return <Outlet />
 }

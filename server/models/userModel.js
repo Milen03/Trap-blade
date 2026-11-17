@@ -13,8 +13,19 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: [true, 'Паролата е задължителна'],
+        // Задължителна само без Google — който влиза с Google, може да няма парола при нас
+        // (по-късно може да си зададе от "Настройки на профила" или от "Забравена парола").
+        required: [
+            function () { return !this.googleId; },
+            'Паролата е задължителна',
+        ],
         minlength: [6, 'Паролата трябва да е поне 6 символа'],
+    },
+    // Уникалното ID на потребителя в Google ("sub" от токена). Само при вход с Google.
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true,
     },
     firstName: {
         type: String,
@@ -75,7 +86,14 @@ const userSchema = new mongoose.Schema({
     // махаме паролата (хеша), данните за смяна на парола и __v, за да не излизат никога навън.
     toJSON: {
         transform: (doc, ret) => {
+            // Само за клиента: какво да покаже. Самите парола и Google ID не излизат навън.
+            ret.hasPassword = Boolean(doc.password);
+            ret.hasGoogle = Boolean(doc.googleId);
+            // "Довършен" профил: има име, фамилия и телефон. След първи вход с Google телефон няма,
+            // затова клиентът показва "Довърши регистрацията", докато това не стане true.
+            ret.profileComplete = Boolean(doc.firstName && doc.lastName && doc.phone);
             delete ret.password;
+            delete ret.googleId;
             delete ret.resetPasswordHash;
             delete ret.resetPasswordExpires;
             delete ret.__v;
@@ -86,6 +104,8 @@ const userSchema = new mongoose.Schema({
 
 userSchema.methods = {
     matchPassword: function (password) {
+        // Профил само с Google няма парола -> никоя парола не съвпада.
+        if (!this.password || typeof password !== 'string') return Promise.resolve(false);
         return bcrypt.compare(password, this.password);
     }
 }

@@ -10,6 +10,8 @@ const limits = require('../utils/rateLimits');
 // limits.* — ограничения на опитите (виж utils/rateLimits.js). При превишаване -> 429.
 router.post('/register', limits.register, authController.register);
 router.post('/login', limits.login, authController.login);
+// Вход с Google: проверява токена от Google; при нов профил клиентът показва "Довърши регистрацията".
+router.post('/login/google', limits.googleLogin, authController.googleLogin);
 router.post('/logout', authController.logout);
 // Забравена парола: 1) иска линк по имейл, 2) записва нова парола с кода от линка.
 router.post('/forgot-password', limits.forgotPassword, authController.forgotPassword);

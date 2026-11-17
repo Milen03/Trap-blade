@@ -87,6 +87,10 @@ async function create(req, res, next) {
     const user = req.user;
 
     try {
+        // След вход с Google профилът може още да няма телефон — без него бръснарят не може да звънне.
+        if (!user.phone) {
+            throw httpError(400, 'Довърши профила си (име и телефон), за да запишеш час.');
+        }
         const barber = await findBarber(barberId);
         schedule.assertDate(date);
         schedule.assertTime(time);

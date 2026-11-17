@@ -46,6 +46,9 @@ function AuthProvider({ children }) {
       isLoading,
       login: (email, password) => saveUser(authService.login(email, password)),
       register: (data) => saveUser(authService.register(data)),
+      // Вход с Google и "Довърши регистрацията" след него.
+      googleLogin: (credential) => saveUser(authService.googleLogin(credential)),
+      updateProfile: (data) => saveUser(authService.updateProfile(data)),
       // Записва новата парола и логва потребителя (виж ResetPassword.jsx).
       resetPassword: (token, password, rePassword) => saveUser(authService.resetPassword(token, password, rePassword)),
       // "Настройки на профила" — новият телефон се вижда веднага навсякъде.

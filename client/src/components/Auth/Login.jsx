@@ -4,6 +4,7 @@ import { useAuth } from '../../hooks/useAuth.js'
 import AuthLayout from './AuthLayout.jsx'
 import AuthField from './AuthField.jsx'
 import FormError from './FormError.jsx'
+import GoogleSignIn from './GoogleSignIn.jsx'
 import { homePath } from '../../utils/roles.js'
 
 function Login() {
@@ -93,6 +94,8 @@ function Login() {
           Login
         </button>
       </form>
+
+      <GoogleSignIn />
     </AuthLayout>
   )
 }
