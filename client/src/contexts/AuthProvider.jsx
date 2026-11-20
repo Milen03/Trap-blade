@@ -53,6 +53,8 @@ function AuthProvider({ children }) {
       resetPassword: (token, password, rePassword) => saveUser(authService.resetPassword(token, password, rePassword)),
       // "Настройки на профила" — новият телефон се вижда веднага навсякъде.
       changePhone: (phone) => saveUser(authService.changePhone(phone)),
+      // Новото име се вижда веднага навсякъде (например "Welcome Име" в менюто).
+      changeName: (firstName, lastName) => saveUser(authService.changeName(firstName, lastName)),
       changeEmail: (email, currentPassword) => saveUser(authService.changeEmail(email, currentPassword)),
       changePassword: (currentPassword, password, rePassword) =>
         saveUser(authService.changePassword(currentPassword, password, rePassword)),

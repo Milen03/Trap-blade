@@ -1,20 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth.js'
-import { STUDIO } from '../data/studio.js'
 import { EMAIL_REGEX, PHONE_REGEX } from '../utils/validation.js'
 import FormError from '../components/Auth/FormError.jsx'
 import ConfirmDialog from '../components/ConfirmDialog.jsx'
 import { inputClass, labelClass, primaryButton, secondaryButton, sectionTitle } from '../components/Panel/ui.js'
-
-function Row({ label, children }) {
-  return (
-    <div className="flex flex-col gap-1 px-4 py-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
-      <dt className="text-xs uppercase tracking-[0.2em] text-white/50">{label}</dt>
-      <dd className="break-all font-bold sm:text-right">{children}</dd>
-    </div>
-  )
-}
 
 // Ред със стойност и бутон "Промени", който се превръща във форма с поле, "Откажи" и "Запази".
 function EditableValue({ id, label, type, autoComplete, placeholder, value, editing, draft, error, onEdit, onDraft, onCancel, onSave }) {
@@ -59,14 +49,97 @@ function EditableValue({ id, label, type, autoComplete, placeholder, value, edit
   )
 }
 
-// "Настройки на профила": данните на потребителя, смяна на телефона и имейла, линк към смяна на паролата.
-// Името само се показва — сменя се през салона.
+// Име и фамилия: стойността и бутон "Промени", който се превръща във форма с две полета.
+function NameEditor({ user, state, onEdit, onDraft, onCancel, onSave }) {
+  if (!state.editing) {
+    return (
+      <div className="flex items-center justify-between gap-4 border border-line bg-coal px-4 py-3">
+        <span className="min-w-0 break-words font-bold">
+          {user.firstName} {user.lastName}
+        </span>
+        <button type="button" onClick={onEdit} className={`${secondaryButton} shrink-0`}>
+          Промени
+        </button>
+      </div>
+    )
+  }
+
+  return (
+    <form onSubmit={onSave} className="space-y-4 border border-line bg-coal p-4" noValidate>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="settings-first-name" className={labelClass}>
+            Име
+          </label>
+          <input
+            id="settings-first-name"
+            autoComplete="given-name"
+            maxLength={50}
+            value={state.firstName}
+            onChange={(e) => onDraft({ firstName: e.target.value })}
+            className={inputClass}
+            autoFocus
+          />
+        </div>
+        <div>
+          <label htmlFor="settings-last-name" className={labelClass}>
+            Фамилия
+          </label>
+          <input
+            id="settings-last-name"
+            autoComplete="family-name"
+            maxLength={50}
+            value={state.lastName}
+            onChange={(e) => onDraft({ lastName: e.target.value })}
+            className={inputClass}
+          />
+        </div>
+      </div>
+      <FormError message={state.error} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button type="button" onClick={onCancel} className={secondaryButton}>
+          Откажи
+        </button>
+        <button type="submit" className={primaryButton}>
+          Запази
+        </button>
+      </div>
+    </form>
+  )
+}
+
+// "Настройки на профила": данните на потребителя, смяна на името, телефона и имейла, линк към смяна на паролата.
 function Settings() {
-  const { user, changePhone, changeEmail } = useAuth()
+  const { user, changePhone, changeEmail, changeName } = useAuth()
   const location = useLocation()
 
   // Съобщение, дошло от друга страница (например "Паролата е сменена" от ChangePassword.jsx).
   const [notice, setNotice] = useState(location.state?.notice || '')
+
+  // ---------- Име и фамилия ----------
+  const [name, setName] = useState({ editing: false, firstName: '', lastName: '', error: '', confirming: false, saving: false })
+
+  const askToSaveName = (e) => {
+    e.preventDefault()
+    const firstName = name.firstName.trim()
+    const lastName = name.lastName.trim()
+    let error = ''
+    if (!firstName) error = 'Въведи име'
+    else if (!lastName) error = 'Въведи фамилия'
+    else if (firstName === user.firstName && lastName === user.lastName) error = 'Това са сегашните ти имена'
+    setName((s) => ({ ...s, error, confirming: !error }))
+  }
+
+  const saveName = async () => {
+    setName((s) => ({ ...s, saving: true }))
+    try {
+      await changeName(name.firstName.trim(), name.lastName.trim())
+      setName({ editing: false, firstName: '', lastName: '', error: '', confirming: false, saving: false })
+      setNotice('Името е сменено.')
+    } catch (err) {
+      setName((s) => ({ ...s, confirming: false, saving: false, error: err.message }))
+    }
+  }
 
   // ---------- Телефон ----------
   const [phone, setPhone] = useState({ editing: false, draft: '', error: '', confirming: false, saving: false })
@@ -164,20 +237,21 @@ function Settings() {
             </p>
           )}
 
-          {/* ---------- Лични данни ---------- */}
+          {/* ---------- Име и фамилия ---------- */}
           <section>
-            <h2 className={`${sectionTitle} mb-3`}>Лични данни</h2>
-            <dl className="divide-y divide-line border border-line bg-coal">
-              <Row label="Име">{user.firstName}</Row>
-              <Row label="Фамилия">{user.lastName}</Row>
-            </dl>
-            <p className="mt-2 text-xs text-white/50">
-              Името не може да се сменя оттук. Ако има грешка, обади се в салона:{' '}
-              <a href={STUDIO.phoneHref} className="text-ice hover:text-white">
-                {STUDIO.phone}
-              </a>
-              .
-            </p>
+            <h2 className={`${sectionTitle} mb-3`}>Име и фамилия</h2>
+            <NameEditor
+              user={user}
+              state={name}
+              onEdit={() => {
+                setNotice('')
+                setName((s) => ({ ...s, editing: true, firstName: user.firstName || '', lastName: user.lastName || '', error: '' }))
+              }}
+              onDraft={(change) => setName((s) => ({ ...s, ...change }))}
+              onCancel={() => setName((s) => ({ ...s, editing: false, error: '' }))}
+              onSave={askToSaveName}
+            />
+            <p className="mt-2 text-xs text-white/50">С това име бръснарите виждат записаните ти часове.</p>
           </section>
 
           {/* ---------- Имейл ---------- */}
@@ -259,6 +333,21 @@ function Settings() {
           </section>
         </main>
       </div>
+
+      {name.confirming && (
+        <ConfirmDialog
+          title="Смяна на името"
+          busy={name.saving}
+          onConfirm={saveName}
+          onCancel={() => setName((s) => ({ ...s, confirming: false }))}
+        >
+          Сигурен ли си, че искаш да смениш името си на{' '}
+          <strong className="text-white">
+            {name.firstName.trim()} {name.lastName.trim()}
+          </strong>
+          ? Новите ти часове ще са с това име.
+        </ConfirmDialog>
+      )}
 
       {phone.confirming && (
         <ConfirmDialog
