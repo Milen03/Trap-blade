@@ -58,3 +58,8 @@ export function googleLogin(credential) {
 export function updateProfile(data) {
   return api.put('/users/profile', data)
 }
+
+// "Настройки на профила": сменя само името и фамилията. Връща обновения потребител.
+export function changeName(firstName, lastName) {
+  return api.put('/users/name', { firstName, lastName })
+}

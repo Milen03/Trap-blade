@@ -101,3 +101,27 @@ describe('Смяна на имейла', () => {
         await f.guest().put('/api/users/email').send({ email: 'x@test.bg', currentPassword: 'x' }).expect(401);
     });
 });
+
+describe('Смяна на име и фамилия', () => {
+    it('сменя само имената; телефонът и имейлът остават', async () => {
+        const { agent, user } = await f.registerClient();
+        const res = await agent.put('/api/users/name').send({ firstName: '  Петър ', lastName: 'Стоянов', phone: '0899 000 000', email: 'x@x.bg' }).expect(200);
+        assert.equal(res.body.firstName, 'Петър');
+        assert.equal(res.body.lastName, 'Стоянов');
+        assert.equal(res.body.phone, user.phone);
+        assert.equal(res.body.email, user.email);
+
+        const profile = await agent.get('/api/users/profile').expect(200);
+        assert.equal(profile.body.firstName, 'Петър');
+    });
+
+    it('празно или твърде дълго -> 400; гост -> 401', async () => {
+        const { agent } = await f.registerClient();
+        let res = await agent.put('/api/users/name').send({ firstName: '', lastName: 'Стоянов' }).expect(400);
+        assert.match(res.body.message, /Въведи име/);
+        res = await agent.put('/api/users/name').send({ firstName: 'Петър', lastName: ' ' }).expect(400);
+        assert.match(res.body.message, /Въведи фамилия/);
+        await agent.put('/api/users/name').send({ firstName: 'П'.repeat(51), lastName: 'Стоянов' }).expect(400);
+        await f.guest().put('/api/users/name').send({ firstName: 'Петър', lastName: 'Стоянов' }).expect(401);
+    });
+});

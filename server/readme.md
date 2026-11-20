@@ -55,6 +55,7 @@ npm run test:unit      # само бързите тестове без база
 | GET | `/users/profile` | логнатият потребител (подновява сесията) |
 | PUT | `/users/profile` | `{ firstName, lastName, phone }` |
 | PUT | `/users/phone` | `{ phone }`: сменя само телефона („Настройки на профила“) |
+| PUT | `/users/name` | `{ firstName, lastName }`: сменя само името и фамилията (до 50 символа) |
 | PUT | `/users/email` | `{ email, currentPassword }`: смяна на имейла с текущата парола; зает имейл → 409; 5 грешни опита за 15 мин → 429 |
 | PUT | `/users/password` | `{ currentPassword, password, rePassword }`: смяна на паролата с текущата; 5 грешни опита за 15 мин → 429 |
 

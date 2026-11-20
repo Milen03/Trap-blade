@@ -213,6 +213,36 @@ async function changePhone(req, res, next) {
     }
 }
 
+// PUT /api/users/name — тяло: { firstName, lastName }. Сменя само имената
+// (телефонът и имейлът не се пипат). Вече записаните часове пазят старото име — то е копирано в тях.
+const MAX_NAME_LENGTH = 50;
+
+async function changeName(req, res, next) {
+    const firstName = cleanString(req.body.firstName);
+    const lastName = cleanString(req.body.lastName);
+
+    if (!firstName) {
+        return res.status(400).send({ message: 'Въведи име' });
+    }
+    if (!lastName) {
+        return res.status(400).send({ message: 'Въведи фамилия' });
+    }
+    if (firstName.length > MAX_NAME_LENGTH || lastName.length > MAX_NAME_LENGTH) {
+        return res.status(400).send({ message: `Името и фамилията може да са най-много ${MAX_NAME_LENGTH} символа` });
+    }
+
+    try {
+        const user = await userModel.findOneAndUpdate(
+            { _id: req.user._id },
+            { firstName, lastName },
+            { runValidators: true, new: true }
+        );
+        res.status(200).json(user);
+    } catch (err) {
+        next(err);
+    }
+}
+
 // PUT /api/users/email — тяло: { email, currentPassword }.
 // Имейлът е и името за вход, и адресът за "Забравена парола" — затова искаме текущата парола
 // (иначе някой с отворена чужда сесия би сложил своя имейл и после би откраднал профила).
@@ -405,6 +435,7 @@ module.exports = {
     getProfileInfo,
     editProfileInfo,
     changePhone,
+    changeName,
     changeEmail,
     changePassword,
 }
