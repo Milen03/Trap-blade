@@ -67,15 +67,16 @@ describe('Записване на час', () => {
         await f.guest().post('/api/appointments').send({ barberId: barber._id, date: f.tomorrow(), time: '10:00', serviceId: 'hair' }).expect(401);
     });
 
-    it('най-много 2 предстоящи часа на клиент', async () => {
+    it('клиент може да запише повече от 2 предстоящи часа', async () => {
         const barber = await f.createStaff('barber');
         await f.openDay(barber, f.tomorrow());
         const { agent } = await f.registerClient();
 
         await book(agent, barber, '10:00').expect(201);
         await book(agent, barber, '10:30').expect(201);
-        const res = await book(agent, barber, '11:00').expect(409);
-        assert.match(res.body.message, /най-много 2/);
+        await book(agent, barber, '11:00').expect(201);
+        const mine = await agent.get('/api/appointments/mine').expect(200);
+        assert.equal(mine.body.length, 3);
     });
 
     it('отменен час може да се запише отново', async () => {
