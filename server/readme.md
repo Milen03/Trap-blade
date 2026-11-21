@@ -73,7 +73,7 @@ npm run test:unit      # само бързите тестове без база
 
 | Метод | Път | Кой | Бележки |
 |---|---|---|---|
-| POST | `/appointments` | логнат | `{ barberId, date, time, serviceId }`. Часът трябва да е от графика и свободен. Най-много 2 предстоящи часа на клиент. Двойно записване → 409. |
+| POST | `/appointments` | логнат | `{ barberId, date, time, serviceId }`. Часът трябва да е от графика и свободен. Двойно записване → 409. |
 | GET | `/appointments/mine` | логнат | всички мои часове |
 | PATCH | `/appointments/:id/cancel` | клиент / бръснар / owner | клиентът може да отмени най-късно 2 часа преди часа |
 | GET | `/appointments?date=` или `?month=` `[&barberId=][&status=]` | barber, owner | barber вижда своите, owner вижда всички |

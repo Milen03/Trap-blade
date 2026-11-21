@@ -2,9 +2,6 @@ const { appointmentModel, workDayModel } = require('../models');
 const { httpError, schedule, availability, validators } = require('../utils');
 const { findBarber } = require('./barberController');
 
-// Колко активни (предстоящи) часа може да има един клиент наведнъж.
-// 2, за да може родител да запише себе си и детето си.
-const MAX_ACTIVE_PER_CLIENT = 2;
 // Клиентът може да отмени най-късно толкова часа преди часа си. След това — само по телефона.
 const CANCEL_HOURS_BEFORE = 2;
 
@@ -103,15 +100,6 @@ async function create(req, res, next) {
         const workDay = await workDayModel.findOne({ barber: barber._id, date });
         if (!workDay || workDay.dayOff || !workDay.slots.includes(time)) {
             throw httpError(400, 'Този час не е свободен в графика на бръснаря. Избери друг.');
-        }
-
-        // Ограничение за брой предстоящи часове — да не може някой да запише целия ден.
-        const active = await appointmentModel
-            .find({ client: user._id, status: 'booked', date: { $gte: schedule.today() } })
-            .select('date time');
-        const upcoming = active.filter((a) => !hasStarted(a.date, a.time));
-        if (upcoming.length >= MAX_ACTIVE_PER_CLIENT) {
-            throw httpError(409, `Може да имаш най-много ${MAX_ACTIVE_PER_CLIENT} предстоящи часа. Отмени някой, за да запишеш нов.`);
         }
 
         // Ако някой друг е взел същия час междувременно, уникалният индекс връща грешка 11000
@@ -320,7 +308,6 @@ async function createManual(req, res, next) {
 }
 
 module.exports = {
-    MAX_ACTIVE_PER_CLIENT,
     CANCEL_HOURS_BEFORE,
     getAvailability,
     create,
