@@ -65,6 +65,13 @@ function Footer() {
           </Link>
         </nav>
       </div>
+
+      {/* Кой е направил сайта — отделно от копирайта на студиото. */}
+      <div className="mx-auto max-w-6xl px-4 pb-5 sm:px-6">
+        <p className="text-[10px] uppercase tracking-[0.25em] text-white/30">
+          Website by <span className="text-white/50">Milen Atanasov</span>
+        </p>
+      </div>
     </footer>
   )
 }
