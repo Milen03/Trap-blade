@@ -55,7 +55,13 @@ function Footer() {
       </div>
 
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-3 border-t border-line px-4 py-5 sm:px-6">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-white/40">© {year} TrapBlade Studio</p>
+        <p className="text-[11px] uppercase tracking-[0.25em] text-white/40">
+          © {year} TrapBlade Studio <span aria-hidden="true">·</span>{' '}
+          {/* Не се пренася по средата — на телефон отива цялото на нов ред. */}
+          <span className="whitespace-nowrap">
+            Made by <span className="text-white/60">Milen Atanasov</span>
+          </span>
+        </p>
         <nav className="flex gap-5 text-[11px] uppercase tracking-[0.25em] text-white/50">
           <Link to="/terms" className="hover:text-ice">
             Общи условия
